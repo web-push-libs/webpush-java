@@ -27,7 +27,7 @@ compileTestJava.options.encoding = 'ISO-8859-1'
 
 jar {
     baseName = 'web-push'
-    version = "${version}-SNAPSHOT"
+    version = "${version}"
 }
 
 task sourcesJar(type: Jar) {
