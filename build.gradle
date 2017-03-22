@@ -1,5 +1,5 @@
 group 'nl.martijndwars'
-version '2.0.1'
+version "${version}"
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -27,7 +27,7 @@ compileTestJava.options.encoding = 'ISO-8859-1'
 
 jar {
     baseName = 'web-push'
-    version = '2.0.1'
+    version = "${version}-SNAPSHOT"
 }
 
 task sourcesJar(type: Jar) {
