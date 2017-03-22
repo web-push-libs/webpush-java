@@ -4,30 +4,35 @@ version '2.0.0'
 apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'net.researchgate.release'
+apply plugin: 'maven-publish'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "${artifactory_base_url}/plugins-release" }
+        maven { url "${artifactory_base_url}/plugins-snapshot" }
+    }
+
+    dependencies {
+        classpath 'net.researchgate:gradle-release:2.3.5'
+    }
+}
+
+compileTestJava.options.encoding = 'ISO-8859-1'
 
 jar {
     baseName = 'web-push'
     version = '2.0.0'
 }
 
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
-
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
-}
-
-artifacts {
-    archives jar
-
-    archives javadocJar
-    archives sourcesJar
 }
 
 signing {
@@ -87,7 +92,12 @@ uploadArchives {
 
 repositories {
     mavenCentral()
+    jcenter()
+    maven { url "${artifactory_base_url}/libs-release" }
+    maven { url "${artifactory_base_url}/libs-snapshot" }
+    mavenLocal()
 }
+
 
 dependencies {
     // For making HTTP requests
@@ -102,7 +112,7 @@ dependencies {
     // For creating and signing JWT
     compile group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.5.2'
 
-    
+
     // For testing, obviously
     testCompile group: 'junit', name: 'junit', version: '4.11'
 
@@ -124,3 +134,35 @@ dependencies {
     // For downloading and linking WebDriver's for verious browsers
     testCompile group: 'io.github.bonigarcia', name: 'webdrivermanager', version: '1.4.9'
 }
+
+publishing {
+    repositories {
+        maven {
+            name 'Artifactory'
+            url "${artifactory_base_url}/libs-release-local"
+
+            credentials {
+                username artifactory_user
+                password artifactory_password
+            }
+        }
+    }
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId archivesBaseName
+            from components.java
+        }
+    }
+}
+
+release {
+    failOnCommitNeeded = false
+    failOnPublishNeeded = true
+    failOnSnapshotDependencies = true
+    failOnUnversionedFiles = true
+    failOnUpdateNeeded = true
+    revertOnFail = true
+}
+
+afterReleaseBuild.dependsOn publish
+
