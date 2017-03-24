@@ -1,8 +1,8 @@
 package nl.martijndwars.webpush;
 
-import com.google.common.base.Predicate;
-import io.github.bonigarcia.wdm.ChromeDriverManager;
-import io.github.bonigarcia.wdm.MarionetteDriverManager;
+import java.nio.charset.StandardCharsets;
+import java.security.Security;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -12,17 +12,6 @@ import org.jose4j.jwt.JwtClaims;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.nio.charset.StandardCharsets;
-import java.security.PublicKey;
-import java.security.Security;
 
 public class PushServiceTest {
     @BeforeClass
