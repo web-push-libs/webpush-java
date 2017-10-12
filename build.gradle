@@ -150,6 +150,9 @@ dependencies {
     // For creating and signing JWT
     compile group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.5.2'
 
+    // For jose4j logging
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.13'
+
     // For making HTTP requests
     testCompile group: 'org.apache.httpcomponents', name: 'fluent-hc', version: '4.5.2'
 
