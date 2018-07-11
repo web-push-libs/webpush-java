@@ -1,6 +1,23 @@
 package nl.martijndwars.webpush;
 
-import com.google.common.io.BaseEncoding;
+import static nl.martijndwars.webpush.Utils.CURVE;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.interfaces.ECPrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
@@ -16,16 +33,7 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.lang.JoseException;
 
-import java.io.IOException;
-import java.security.*;
-import java.security.interfaces.ECPrivateKey;
-import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import static nl.martijndwars.webpush.Utils.CURVE;
+import com.google.common.io.BaseEncoding;
 
 public class PushService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -49,6 +57,11 @@ public class PushService {
      * The private key (for VAPID)
      */
     private PrivateKey privateKey;
+
+    /**
+     * Http client
+     */
+    private CloseableHttpAsyncClient closeableHttpAsyncClient;
 
     public PushService() {
     }
@@ -115,10 +128,15 @@ public class PushService {
      * @throws InterruptedException
      */
     public HttpResponse send(Notification notification) throws GeneralSecurityException, IOException, JoseException, ExecutionException, InterruptedException {
+      try {
         return sendAsync(notification).get();
+      } catch (ExecutionException e) {
+        destroyClient();
+        throw e;
+      }
     }
 
-    /**
+  /**
      * Send a notification, but don't wait for the response.
      *
      * @param notification
@@ -129,14 +147,10 @@ public class PushService {
      */
     public Future<HttpResponse> sendAsync(Notification notification) throws GeneralSecurityException, IOException, JoseException {
         HttpPost httpPost = preparePost(notification);
-
-        final CloseableHttpAsyncClient closeableHttpAsyncClient = HttpAsyncClients.createSystem();
-        closeableHttpAsyncClient.start();
-
-        return closeableHttpAsyncClient.execute(httpPost, new ClosableCallback(closeableHttpAsyncClient));
+        return getClient().execute(httpPost, new ClosableCallback(closeableHttpAsyncClient));
     }
 
-    /**
+  /**
      * Prepare a HttpPost for Apache async http client
      *
      * @param notification
@@ -324,5 +338,21 @@ public class PushService {
      */
     protected boolean vapidEnabled() {
         return publicKey != null && privateKey != null;
+    }
+
+    private CloseableHttpAsyncClient getClient() {
+      if(closeableHttpAsyncClient == null) {
+        closeableHttpAsyncClient = HttpAsyncClients.createSystem();
+        closeableHttpAsyncClient.start();
+      }
+      return closeableHttpAsyncClient;
+    }
+
+    private void destroyClient() throws IOException {
+      try {
+        getClient().close();
+      } finally {
+        closeableHttpAsyncClient = null;
+      }
     }
 }
