@@ -1,23 +1,6 @@
 package nl.martijndwars.webpush;
 
-import static nl.martijndwars.webpush.Utils.CURVE;
-
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.interfaces.ECPrivateKey;
-import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
+import com.google.common.io.BaseEncoding;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
@@ -33,7 +16,16 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.lang.JoseException;
 
-import com.google.common.io.BaseEncoding;
+import java.io.IOException;
+import java.security.*;
+import java.security.interfaces.ECPrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import static nl.martijndwars.webpush.Utils.CURVE;
 
 public class PushService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
