@@ -229,7 +229,7 @@ object.
 
 ```java
 class Subscription {
-    ... // Getters and setters for e.g. endpoint
+    // Getters and setters for e.g. endpoint
 
     public void setAuth(String auth) {
         this.auth = auth;
@@ -265,12 +265,21 @@ class Subscription {
      * Returns the base64 encoded public key as a PublicKey object
      */
     public PublicKey getUserPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+        Security.addProvider(new BouncyCastleProvider());
         KeyFactory kf = KeyFactory.getInstance("ECDH", BouncyCastleProvider.PROVIDER_NAME);
         ECNamedCurveParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp256r1");
         ECPoint point = ecSpec.getCurve().decodePoint(getKeyAsBytes());
         ECPublicKeySpec pubSpec = new ECPublicKeySpec(point, ecSpec);
 
         return kf.generatePublic(pubSpec);
+    }
+
+    public void setEndpoint(String endpoint) {
+		    this.endpoint = endpoint;
+	  }
+	
+	  public String getEndpoint() {
+		    return endpoint;
     }
 }
 ```
