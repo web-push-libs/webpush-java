@@ -8,6 +8,10 @@ jdk:
   - openjdk7
   - oraclejdk8
 
+env:
+  - JAVA_OPTS=-Dfile.encoding=cp1252
+  - JAVA_OPTS=-Dfile.encoding=UTF-8
+
 before_install:
   - nvm install node
 
@@ -15,6 +19,7 @@ install:
   - npm install web-push-testing-service@0.4.0 -g
 
 before_script:
+  - sudo sed -i 's/security.provider.9/#security.provider.9/g' $JAVA_HOME/jre/lib/security/java.security
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start || echo \"Unable to start virtual display.\""
   - sleep 3
@@ -24,6 +29,3 @@ script:
   - ./gradlew test
   - web-push-testing-service stop wpts
 
-env:
-  - JAVA_OPTS=-Dfile.encoding=cp1252
-  - JAVA_OPTS=-Dfile.encoding=UTF-8
