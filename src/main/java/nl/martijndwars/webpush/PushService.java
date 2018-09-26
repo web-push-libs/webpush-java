@@ -49,6 +49,11 @@ public class PushService {
      */
     private PrivateKey privateKey;
 
+    /**
+     * Http client
+     */
+    private CloseableHttpAsyncClient closeableHttpAsyncClient;
+
     public PushService() {
     }
 
@@ -114,10 +119,15 @@ public class PushService {
      * @throws InterruptedException
      */
     public HttpResponse send(Notification notification) throws GeneralSecurityException, IOException, JoseException, ExecutionException, InterruptedException {
+      try {
         return sendAsync(notification).get();
+      } catch (ExecutionException e) {
+        destroyClient();
+        throw e;
+      }
     }
 
-    /**
+  /**
      * Send a notification, but don't wait for the response.
      *
      * @param notification
@@ -128,14 +138,10 @@ public class PushService {
      */
     public Future<HttpResponse> sendAsync(Notification notification) throws GeneralSecurityException, IOException, JoseException {
         HttpPost httpPost = preparePost(notification);
-
-        final CloseableHttpAsyncClient closeableHttpAsyncClient = HttpAsyncClients.createSystem();
-        closeableHttpAsyncClient.start();
-
-        return closeableHttpAsyncClient.execute(httpPost, new ClosableCallback(closeableHttpAsyncClient));
+        return getClient().execute(httpPost, new ClosableCallback(closeableHttpAsyncClient));
     }
 
-    /**
+  /**
      * Prepare a HttpPost for Apache async http client
      *
      * @param notification
@@ -322,5 +328,21 @@ public class PushService {
      */
     protected boolean vapidEnabled() {
         return publicKey != null && privateKey != null;
+    }
+
+    private CloseableHttpAsyncClient getClient() {
+      if(closeableHttpAsyncClient == null) {
+        closeableHttpAsyncClient = HttpAsyncClients.createSystem();
+        closeableHttpAsyncClient.start();
+      }
+      return closeableHttpAsyncClient;
+    }
+
+    private void destroyClient() throws IOException {
+      try {
+        getClient().close();
+      } finally {
+        closeableHttpAsyncClient = null;
+      }
     }
 }
