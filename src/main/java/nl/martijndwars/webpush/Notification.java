@@ -1,5 +1,7 @@
 package nl.martijndwars.webpush;
 
+import org.bouncycastle.jce.interfaces.ECPublicKey;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
@@ -18,7 +20,7 @@ public class Notification {
     /**
      * The client's public key
      */
-    private final PublicKey userPublicKey;
+    private final ECPublicKey userPublicKey;
 
     /**
      * The client's auth
@@ -35,12 +37,17 @@ public class Notification {
      */
     private final int ttl;
 
-    public Notification(String endpoint, PublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl) {
+
+    public Notification(String endpoint, ECPublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl) {
         this.endpoint = endpoint;
         this.userPublicKey = userPublicKey;
         this.userAuth = userAuth;
         this.payload = payload;
         this.ttl = ttl;
+    }
+
+    public Notification(String endpoint, PublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl) {
+        this(endpoint, (ECPublicKey) userPublicKey, userAuth, payload, ttl);
     }
 
     public Notification(String endpoint, PublicKey userPublicKey, byte[] userAuth, byte[] payload) {
@@ -63,7 +70,7 @@ public class Notification {
         return endpoint;
     }
 
-    public PublicKey getUserPublicKey() {
+    public ECPublicKey getUserPublicKey() {
         return userPublicKey;
     }
 
@@ -90,10 +97,6 @@ public class Notification {
 
     public int getTTL() {
         return ttl;
-    }
-
-    public int getPadSize() {
-        return 2;
     }
 
     public String getOrigin() throws MalformedURLException {

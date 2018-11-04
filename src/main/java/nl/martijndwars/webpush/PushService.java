@@ -9,25 +9,24 @@ import org.apache.http.message.BasicHeader;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.math.ec.ECPoint;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.lang.JoseException;
 
 import java.io.IOException;
+import java.net.URI;
 import java.security.*;
-import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static nl.martijndwars.webpush.Utils.CURVE;
-
 public class PushService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    public static final String SERVER_KEY_ID = "server-key-id";
+    public static final String SERVER_KEY_CURVE = "P-256";
 
     /**
      * The Google Cloud Messaging API key (for pre-VAPID in Chrome)
@@ -69,43 +68,60 @@ public class PushService {
     }
 
     /**
-     * Encrypt the getPayload using the user's public key using Elliptic Curve
-     * Diffie Hellman cryptography over the prime256v1 curve.
+     * Encrypt the payload.
      *
-     * @return An Encrypted object containing the public key, salt, and
-     * ciphertext, which can be sent to the other party.
+     * Encryption uses Elliptic curve Diffie-Hellman (ECDH) cryptography over the prime256v1 curve.
+     *
+     * @param payload       Payload to encrypt.
+     * @param userPublicKey The user agent's public key (keys.p256dh).
+     * @param userAuth      The user agent's authentication secret (keys.auth).
+     * @param encoding
+     * @return An Encrypted object containing the public key, salt, and ciphertext.
+     * @throws GeneralSecurityException
      */
-    public static Encrypted encrypt(byte[] buffer, PublicKey userPublicKey, byte[] userAuth, int padSize) throws GeneralSecurityException, IOException {
-        ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec("prime256v1");
-
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDH", "BC");
-        keyPairGenerator.initialize(parameterSpec);
-
-        KeyPair serverKey = keyPairGenerator.generateKeyPair();
+    public static Encrypted encrypt(byte[] payload, ECPublicKey userPublicKey, byte[] userAuth, Encoding encoding) throws GeneralSecurityException {
+        KeyPair localKeyPair = generateLocalKeyPair();
 
         Map<String, KeyPair> keys = new HashMap<>();
-        keys.put("server-key-id", serverKey);
+        keys.put(SERVER_KEY_ID, localKeyPair);
 
         Map<String, String> labels = new HashMap<>();
-        labels.put("server-key-id", "P-256");
+        labels.put(SERVER_KEY_ID, SERVER_KEY_CURVE);
 
         byte[] salt = new byte[16];
         SECURE_RANDOM.nextBytes(salt);
 
         HttpEce httpEce = new HttpEce(keys, labels);
-        byte[] ciphertext = httpEce.encrypt(buffer, salt, null, "server-key-id", userPublicKey, userAuth, padSize);
+        byte[] ciphertext = httpEce.encrypt(payload, salt, null, SERVER_KEY_ID, userPublicKey, userAuth, encoding);
 
         return new Encrypted.Builder()
                 .withSalt(salt)
-                .withPublicKey(serverKey.getPublic())
+                .withPublicKey(localKeyPair.getPublic())
                 .withCiphertext(ciphertext)
                 .build();
+    }
+
+    /**
+     * Generate the local (ephemeral) keys.
+     *
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws InvalidAlgorithmParameterException
+     */
+    private static KeyPair generateLocalKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+        ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec("prime256v1");
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDH", "BC");
+        keyPairGenerator.initialize(parameterSpec);
+
+        return keyPairGenerator.generateKeyPair();
     }
 
     /**
      * Send a notification and wait for the response.
      *
      * @param notification
+     * @param encoding
      * @return
      * @throws GeneralSecurityException
      * @throws IOException
@@ -113,21 +129,26 @@ public class PushService {
      * @throws ExecutionException
      * @throws InterruptedException
      */
+    public HttpResponse send(Notification notification, Encoding encoding) throws GeneralSecurityException, IOException, JoseException, ExecutionException, InterruptedException {
+        return sendAsync(notification, encoding).get();
+    }
+
     public HttpResponse send(Notification notification) throws GeneralSecurityException, IOException, JoseException, ExecutionException, InterruptedException {
-        return sendAsync(notification).get();
+        return send(notification, Encoding.AESGCM);
     }
 
     /**
      * Send a notification, but don't wait for the response.
      *
      * @param notification
+     * @param encoding
      * @return
      * @throws GeneralSecurityException
      * @throws IOException
      * @throws JoseException
      */
-    public Future<HttpResponse> sendAsync(Notification notification) throws GeneralSecurityException, IOException, JoseException {
-        HttpPost httpPost = preparePost(notification);
+    public Future<HttpResponse> sendAsync(Notification notification, Encoding encoding) throws GeneralSecurityException, IOException, JoseException {
+        HttpPost httpPost = preparePost(notification, encoding);
 
         final CloseableHttpAsyncClient closeableHttpAsyncClient = HttpAsyncClients.createSystem();
         closeableHttpAsyncClient.start();
@@ -135,27 +156,31 @@ public class PushService {
         return closeableHttpAsyncClient.execute(httpPost, new ClosableCallback(closeableHttpAsyncClient));
     }
 
+    public Future<HttpResponse> sendAsync(Notification notification) throws GeneralSecurityException, IOException, JoseException {
+        return sendAsync(notification, Encoding.AESGCM);
+    }
+
     /**
      * Prepare a HttpPost for Apache async http client
      *
      * @param notification
+     * @param encoding
      * @return
      * @throws GeneralSecurityException
      * @throws IOException
      * @throws JoseException
      */
-    public HttpPost preparePost(Notification notification) throws GeneralSecurityException, IOException, JoseException {
-        assert (verifyKeyPair());
-
+    public HttpPost preparePost(Notification notification, Encoding encoding) throws GeneralSecurityException, IOException, JoseException {
+        assert (Utils.verifyKeyPair(privateKey, publicKey));
 
         Encrypted encrypted = encrypt(
                 notification.getPayload(),
                 notification.getUserPublicKey(),
                 notification.getUserAuth(),
-                notification.getPadSize()
+                encoding
         );
 
-        byte[] dh = Utils.savePublicKey((ECPublicKey) encrypted.getPublicKey());
+        byte[] dh = Utils.encode((ECPublicKey) encrypted.getPublicKey());
         byte[] salt = encrypted.getSalt();
 
         HttpPost httpPost = new HttpPost(notification.getEndpoint());
@@ -165,9 +190,14 @@ public class PushService {
 
         if (notification.hasPayload()) {
             headers.put("Content-Type", "application/octet-stream");
-            headers.put("Content-Encoding", "aesgcm");
-            headers.put("Encryption", "salt=" + Base64Encoder.encodeUrlWithoutPadding(salt));
-            headers.put("Crypto-Key", "dh=" + Base64Encoder.encodeUrl(dh));
+
+            if (encoding == Encoding.AES128GCM) {
+                headers.put("Content-Encoding", "aes128gcm");
+            } else if (encoding == Encoding.AESGCM) {
+                headers.put("Content-Encoding", "aesgcm");
+                headers.put("Encryption", "salt=" + Base64Encoder.encodeUrlWithoutPadding(salt));
+                headers.put("Crypto-Key", "dh=" + Base64Encoder.encodeUrl(dh));
+            }
 
             httpPost.setEntity(new ByteArrayEntity(encrypted.getCiphertext()));
         }
@@ -178,9 +208,13 @@ public class PushService {
             }
 
             headers.put("Authorization", "key=" + gcmApiKey);
-        }
+        } else if (vapidEnabled()) {
+            if (encoding == Encoding.AES128GCM) {
+                if (notification.getEndpoint().startsWith("https://fcm.googleapis.com")) {
+                    httpPost.setURI(URI.create(notification.getEndpoint().replace("fcm/send", "wp")));
+                }
+            }
 
-        if (vapidEnabled() && !notification.isGcm()) {
             JwtClaims claims = new JwtClaims();
             claims.setAudience(notification.getOrigin());
             claims.setExpirationTimeMinutesInTheFuture(12 * 60);
@@ -193,9 +227,13 @@ public class PushService {
             jws.setKey(privateKey);
             jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
 
-            headers.put("Authorization", "WebPush " + jws.getCompactSerialization());
+            byte[] pk = Utils.encode((ECPublicKey) publicKey);
 
-            byte[] pk = Utils.savePublicKey((ECPublicKey) publicKey);
+            if (encoding == Encoding.AES128GCM) {
+                headers.put("Authorization", "vapid t=" + jws.getCompactSerialization() + ", k=" + Base64Encoder.encodeUrlWithoutPadding(pk));
+            } else if (encoding == Encoding.AESGCM) {
+                headers.put("Authorization", "WebPush " + jws.getCompactSerialization());
+            }
 
             if (headers.containsKey("Crypto-Key")) {
                 headers.put("Crypto-Key", headers.get("Crypto-Key") + ";p256ecdsa=" + Base64Encoder.encodeUrlWithoutPadding(pk));
@@ -207,15 +245,8 @@ public class PushService {
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             httpPost.addHeader(new BasicHeader(entry.getKey(), entry.getValue()));
         }
+
         return httpPost;
-    }
-
-    private boolean verifyKeyPair() {
-        ECNamedCurveParameterSpec curveParameters = ECNamedCurveTable.getParameterSpec(CURVE);
-        ECPoint g = curveParameters.getG();
-        ECPoint sG = g.multiply(((ECPrivateKey) privateKey).getS());
-
-        return sG.equals(((ECPublicKey) publicKey).getQ());
     }
 
     /**
