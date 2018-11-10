@@ -10,13 +10,13 @@
 
 ```
 git commit -m "Release NEW_VERSION"
-git tag -a NEW_VERSION
+git tag -a NEW_VERSION -m "Version NEW_VERSION"
 ```
 
 3. [Deploy to OSSRH with Gradle](http://central.sonatype.org/pages/gradle.html):
 
 ```
-./gradlew -Prelease uploadArchives
+./gradlew -Prelease clean publish
 ```
 
 4. [Releasing the Deployment](http://central.sonatype.org/pages/releasing-the-deployment.html):
@@ -25,11 +25,10 @@ git tag -a NEW_VERSION
 ./gradlew -Prelease closeAndReleaseRepository
 ```
 
-5. Increment to next version with -SNAPSHOT suffix
+5. Increment to next version and add a -SNAPSHOT suffix
 
 ```
 ./scripts/version.sh OLD_VERSION NEW_VERSION-SNAPSHOT
-...
 ```
 
 6. Create a commit for the new version "Set version to a.b.c-SNAPSHOT"
