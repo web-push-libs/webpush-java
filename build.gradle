@@ -12,7 +12,7 @@ apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'nl.martijndwars'
-version '3.1.1'
+version '4.0.0'
 
 repositories {
     mavenLocal()

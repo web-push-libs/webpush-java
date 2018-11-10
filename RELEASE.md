@@ -1,6 +1,6 @@
 # Release process
 
-1. Update version string in `build.gradle` (twice), `README.md` to the final version (i.e. non-SNAPSHOT).
+1. Update version string in `build.gradle` (1x), `README.md` (4x) to the new (non-SNAPSHOT) version.
 
 ```
 ./scripts/version.sh OLD_VERSION NEW_VERSION
