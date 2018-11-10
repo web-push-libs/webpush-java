@@ -176,6 +176,7 @@ To give credit where credit is due, the PushService is mostly a Java port of mar
 
 - [Voluntary Application Server Identification for Web Push](https://tools.ietf.org/html/draft-ietf-webpush-vapid-01)
 - [Web Push Book](https://web-push-book.gauntface.com/)
+- [Simple Push Demo](https://gauntface.github.io/simple-push-demo/)
 - [Web Push: Data Encryption Test Page](https://jrconlin.github.io/WebPushDataTestPage/)
 - [Push Companion](https://web-push-codelab.appspot.com/)
 

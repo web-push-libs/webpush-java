@@ -20,6 +20,90 @@ public class PushServiceTest {
     }
 
     @Test
+    public void testAes128Gcm() throws Exception {
+        String endpoint = "https://fcm.googleapis.com/fcm/send/cZgR4jdX_a0:APA91bGtFF7ymruzk4OQak-Ck0phn_78WG5eU7ODdolIUB3bXlUUyH08j655HBlHZcRFkCywJRnP_lnFoBQ5WIiiUwdqXyG9ZQA72zV97c_h4i2m17CQcN_2Ycc8HtwDleSJCcsMAu_T";
+
+        // Base64 string user public key/auth
+        String userPublicKey = "BJ7H-eGuEwYMn2u4Rbue3YUvXfugPgEERt1nMW8DyJgFfXmAHgo0mZi5LfzHW65xvI4gYlCvL8qq1OzUks3IYzA";
+        String userAuth = "05MiKXdBb159mUy6G84vaA";
+
+        // Base64 string server public/private key
+        String publicKey = "BG15nGlC3qDleDkI6VPDVT4Ar28t2v2zcHthuRMyoU4nD-t1XpU-PUw8Ve9FH0Zrb0saJDwzi6AJYJAL_CmwNcw";
+        String privateKey = "gNc81rawd_fKWXpFOhllPUD6BJLIkePus7lQ46jMvTs";
+
+        // Construct notification
+        Notification notification = new Notification(endpoint, userPublicKey, userAuth, getPayload());
+
+        // Construct push service
+        PushService pushService = new PushService();
+        pushService.setPublicKey(publicKey);
+        pushService.setPrivateKey(privateKey);
+        pushService.setSubject("mailto:admin@domain.com");
+
+        // Send notification!
+        HttpResponse httpResponse = pushService.send(notification, Encoding.AES128GCM);
+
+        System.out.println(httpResponse.getStatusLine().getStatusCode());
+        System.out.println(IOUtils.toString(httpResponse.getEntity().getContent(), StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testAesGcm() throws Exception {
+        String endpoint = "https://fcm.googleapis.com/fcm/send/cZgR4jdX_a0:APA91bGtFF7ymruzk4OQak-Ck0phn_78WG5eU7ODdolIUB3bXlUUyH08j655HBlHZcRFkCywJRnP_lnFoBQ5WIiiUwdqXyG9ZQA72zV97c_h4i2m17CQcN_2Ycc8HtwDleSJCcsMAu_T";
+
+        // Base64 string user public key/auth
+        String userPublicKey = "BJ7H-eGuEwYMn2u4Rbue3YUvXfugPgEERt1nMW8DyJgFfXmAHgo0mZi5LfzHW65xvI4gYlCvL8qq1OzUks3IYzA";
+        String userAuth = "05MiKXdBb159mUy6G84vaA";
+
+        // Base64 string server public/private key
+        String publicKey = "BG15nGlC3qDleDkI6VPDVT4Ar28t2v2zcHthuRMyoU4nD-t1XpU-PUw8Ve9FH0Zrb0saJDwzi6AJYJAL_CmwNcw";
+        String privateKey = "gNc81rawd_fKWXpFOhllPUD6BJLIkePus7lQ46jMvTs";
+
+        // Construct notification
+        Notification notification = new Notification(endpoint, userPublicKey, userAuth, getPayload());
+
+        // Construct push service
+        PushService pushService = new PushService();
+        pushService.setPublicKey(publicKey);
+        pushService.setPrivateKey(privateKey);
+        pushService.setSubject("mailto:admin@domain.com");
+
+        // Send notification!
+        HttpResponse httpResponse = pushService.send(notification, Encoding.AESGCM);
+
+        System.out.println(httpResponse.getStatusLine().getStatusCode());
+        System.out.println(IOUtils.toString(httpResponse.getEntity().getContent(), StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void testNoEncodingSpecified() throws Exception {
+        String endpoint = "https://fcm.googleapis.com/fcm/send/cZgR4jdX_a0:APA91bGtFF7ymruzk4OQak-Ck0phn_78WG5eU7ODdolIUB3bXlUUyH08j655HBlHZcRFkCywJRnP_lnFoBQ5WIiiUwdqXyG9ZQA72zV97c_h4i2m17CQcN_2Ycc8HtwDleSJCcsMAu_T";
+
+        // Base64 string user public key/auth
+        String userPublicKey = "BJ7H-eGuEwYMn2u4Rbue3YUvXfugPgEERt1nMW8DyJgFfXmAHgo0mZi5LfzHW65xvI4gYlCvL8qq1OzUks3IYzA";
+        String userAuth = "05MiKXdBb159mUy6G84vaA";
+
+        // Base64 string server public/private key
+        String publicKey = "BG15nGlC3qDleDkI6VPDVT4Ar28t2v2zcHthuRMyoU4nD-t1XpU-PUw8Ve9FH0Zrb0saJDwzi6AJYJAL_CmwNcw";
+        String privateKey = "gNc81rawd_fKWXpFOhllPUD6BJLIkePus7lQ46jMvTs";
+
+        // Construct notification
+        Notification notification = new Notification(endpoint, userPublicKey, userAuth, getPayload());
+
+        // Construct push service
+        PushService pushService = new PushService();
+        pushService.setPublicKey(publicKey);
+        pushService.setPrivateKey(privateKey);
+        pushService.setSubject("mailto:admin@domain.com");
+
+        // Send notification!
+        HttpResponse httpResponse = pushService.send(notification);
+
+        System.out.println(httpResponse.getStatusLine().getStatusCode());
+        System.out.println(IOUtils.toString(httpResponse.getEntity().getContent(), StandardCharsets.UTF_8));
+    }
+
+    @Test
     public void testPushFirefoxVapid() throws Exception {
         String endpoint = "https://updates.push.services.mozilla.com/wpush/v1/gAAAAABX1ZgBNvDz6ZIAh6OqNh3hN4ZLEa57oS22mHI70mnvrDbIi-MnJu7FxFzvMV31L_AnIxP_p1Ot47KP8Xmit3XIQjZDjTahqBPmmntWX8JM6AtRxcAHxmXH6KqhyWwL1QEA0jBp";
 

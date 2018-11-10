@@ -1,130 +1,22 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-M4'
-        classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.8.0'
-    }
+plugins {
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '4.0.2'
+
+    // Used by release.gradle
+    id 'maven'
+    id 'signing'
+    id 'io.codearte.nexus-staging' version '0.12.0'
 }
 
-plugins {
-    id 'com.github.johnrengelman.shadow' version '2.0.0'
+if (hasProperty('release')) {
+    apply from: 'release.gradle'
 }
+
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'nl.martijndwars'
 version '3.1.1'
-
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'signing'
-apply plugin: 'org.junit.platform.gradle.plugin'
-apply plugin: 'io.codearte.nexus-staging'
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.0'
-}
-
-compileJava {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-}
-
-compileTestJava {
-    sourceCompatibility = 1.8
-}
-
-jar {
-    baseName = 'web-push'
-    version = '3.1.1'
-}
-
-shadowJar {
-    // BouncyCastle JAR is signed; it cannot be extracted and merged into the fat JAR.
-    dependencies {
-        exclude(
-            dependency(group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.54')
-        )
-    }
-    manifest {
-        attributes 'Main-Class': 'nl.martijndwars.webpush.cli.Cli',
-                   'Class-Path': '../../lib/bcprov-jdk15on-154.jar'
-    }
-}
-
-junitPlatform {
-    selectors {
-        aClass 'nl.martijndwars.webpush.selenium.SeleniumTests'
-    }
-}
-
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives javadocJar, sourcesJar
-}
-
-signing {
-    sign configurations.archives
-}
-
-uploadArchives {
-  repositories {
-    mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-        authentication(
-          userName: project.hasProperty('ossrhPassword') ? ossrhUsername : '',
-          password: project.hasProperty('ossrhPassword') ? ossrhPassword : ''
-        )
-      }
-
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-        authentication(
-          userName: project.hasProperty('ossrhPassword') ? ossrhUsername : '',
-          password: project.hasProperty('ossrhPassword') ? ossrhPassword : ''
-        )
-      }
-
-      pom.project {
-        name 'web-push'
-        packaging 'jar'
-        description 'A Web Push library for Java.'
-        url 'https://github.com/web-push-libs/webpush-java'
-
-        scm {
-          connection 'scm:git:git@github.com:web-push-libs/webpush-java.git'
-          developerConnection 'scm:git:git@github.com:web-push-libs/webpush-java.git'
-          url 'git@github.com:web-push-libs/webpush-java.git'
-        }
-
-        licenses {
-          license {
-            name 'MIT License'
-            url 'https://opensource.org/licenses/MIT'
-          }
-        }
-
-        developers {
-          developer {
-            id 'martijndwars'
-            name 'Martijn Dwars'
-            email 'ikben@martijndwars.nl'
-          }
-        }
-      }
-    }
-  }
-}
 
 repositories {
     mavenLocal()
@@ -151,10 +43,10 @@ dependencies {
     testCompile group: 'org.apache.httpcomponents', name: 'fluent-hc', version: '4.5.2'
 
     // For testing, obviously
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.0.0-M4'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.1'
 
     // For running JUnit tests
-    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.0.0-M4'
+    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.1'
 
     // For turning InputStream to String
     testCompile group: 'commons-io', name: 'commons-io', version: '2.5'
@@ -164,4 +56,52 @@ dependencies {
 
     // For verifying Base64Encoder results in unit tests
     testCompile group: 'com.google.guava', name: 'guava', version: '19.0'
+}
+
+wrapper {
+    gradleVersion = '4.10.2'
+}
+
+compileJava {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
+
+compileTestJava {
+    sourceCompatibility = 1.8
+}
+
+mainClassName = 'nl.martijndwars.webpush.cli.Cli'
+
+shadowJar {
+    // BouncyCastle JAR is signed; it cannot be extracted and merged into the fat JAR.
+    dependencies {
+        exclude(
+            dependency(group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.54')
+        )
+    }
+    manifest {
+        attributes 'Class-Path': '../../lib/bcprov-jdk15on-154.jar'
+    }
+}
+
+test {
+    useJUnitPlatform()
+
+    // TODO: Make the other test proper unit tests and remove this filter.
+    include '**/SeleniumTests.class'
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
 }

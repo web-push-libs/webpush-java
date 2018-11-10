@@ -31,18 +31,21 @@ public class GenerateKeyHandler implements HandlerInterface {
     public void run() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, IOException {
         KeyPair keyPair = generateKeyPair();
 
-        byte[] publicKey = Utils.savePublicKey((ECPublicKey) keyPair.getPublic());
-        byte[] privateKey = Utils.savePrivateKey((ECPrivateKey) keyPair.getPrivate());
+        ECPublicKey publicKey = (ECPublicKey) keyPair.getPublic();
+        ECPrivateKey privateKey = (ECPrivateKey) keyPair.getPrivate();
+
+        byte[] encodedPublicKey = Utils.encode(publicKey);
+        byte[] encodedPrivateKey = Utils.encode(privateKey);
 
         if (generateKeyCommand.hasPublicKeyFile()) {
             writeKey(keyPair.getPublic(), new File(generateKeyCommand.getPublicKeyFile()));
         }
 
         System.out.println("PublicKey:");
-        System.out.println(Base64Encoder.encodeUrl(publicKey));
+        System.out.println(Base64Encoder.encodeUrl(encodedPublicKey));
 
         System.out.println("PrivateKey:");
-        System.out.println(Base64Encoder.encodeUrl(privateKey));
+        System.out.println(Base64Encoder.encodeUrl(encodedPrivateKey));
     }
 
     /**

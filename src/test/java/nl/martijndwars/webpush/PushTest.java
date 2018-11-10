@@ -10,11 +10,33 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.concurrent.ExecutionException;
 
 public class PushTest {
     @Test
-    public void companionPushTest() throws GeneralSecurityException, InterruptedException, JoseException, ExecutionException, IOException {
+    public void testAes128Gcm() throws Exception {
+        Security.addProvider(new BouncyCastleProvider());
+
+        String publicKey = "BG15nGlC3qDleDkI6VPDVT4Ar28t2v2zcHthuRMyoU4nD-t1XpU-PUw8Ve9FH0Zrb0saJDwzi6AJYJAL_CmwNcw";
+        String privateKey = "gNc81rawd_fKWXpFOhllPUD6BJLIkePus7lQ46jMvTs";
+
+        Subscription subscription = new Gson().fromJson("{\"endpoint\":\"https://fcm.googleapis.com/fcm/send/cZgR4jdX_a0:APA91bGtFF7ymruzk4OQak-Ck0phn_78WG5eU7ODdolIUB3bXlUUyH08j655HBlHZcRFkCywJRnP_lnFoBQ5WIiiUwdqXyG9ZQA72zV97c_h4i2m17CQcN_2Ycc8HtwDleSJCcsMAu_T\",\"expirationTime\":null,\"keys\":{\"p256dh\":\"BJ7H-eGuEwYMn2u4Rbue3YUvXfugPgEERt1nMW8DyJgFfXmAHgo0mZi5LfzHW65xvI4gYlCvL8qq1OzUks3IYzA\",\"auth\":\"05MiKXdBb159mUy6G84vaA\"}}", Subscription.class);
+        Notification notification = new Notification(subscription, "Hello");
+
+        PushService pushService = new PushService();
+        pushService.setPublicKey(publicKey);
+        pushService.setPrivateKey(privateKey);
+        pushService.setSubject("mailto:admin@domain.com");
+
+        HttpResponse httpResponse = pushService.send(notification, Encoding.AES128GCM);
+
+        System.out.println(httpResponse.getStatusLine().getStatusCode());
+        System.out.println(IOUtils.toString(httpResponse.getEntity().getContent(), StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void companionPushTest() throws Exception {
         Security.addProvider(new BouncyCastleProvider());
 
         String publicKey = "BLzPK96e2_tX5pE9HA9D6j_H1fkZi3yEgpG1HGifioFtM1wWSoJBcV7vWAsXzIVngaVAm5lmnD2TwvF46ouYx0M";
@@ -38,10 +60,8 @@ public class PushTest {
     public void testPush() throws Exception {
         Security.addProvider(new BouncyCastleProvider());
 
-        Gson gson = new Gson();
-
         // Deserialize subscription object
-        Subscription subscription = gson.fromJson(
+        Subscription subscription = new Gson().fromJson(
                 "{\"endpoint\":\"https://fcm.googleapis.com/fcm/send/efI2iY2iI7g:APA91bFJMK9cNaCh9dDyQ8X3kuXEzVYlHGEJ2BLKG57n7H_NCjTyjJ87wczJKkAV8wfqo5iZRFnTJf1LgaqZ5NsNhGX2PTQQM5pPaCS41ogYfSY9KpfKZJTY410sUQG6yEDGjSuXrtbP\",\"keys\":{\"p256dh\":\"BHj7LOv2ARShKqY_RXP5zoSSpvAevF-VTzJFm9dXfTtnFg5wHVqei_74UOF8vr8kzY-3hR-wgdhGQOw10AxkmBI=\",\"auth\":\"cJN5ZAvblDfOo_Y_ibFZSg==\"}}",
                 Subscription.class
         );
@@ -82,10 +102,8 @@ public class PushTest {
     public void testPush2() throws Exception {
         Security.addProvider(new BouncyCastleProvider());
 
-        Gson gson = new Gson();
-
         // Deserialize subscription object
-        Subscription subscription = gson.fromJson(
+        Subscription subscription = new Gson().fromJson(
                 "{\"endpoint\":\"https://fcm.googleapis.com/fcm/send/crTeErRUPTc:APA91bFVWbWwmV5pT-ChX-lQRdR-e_WFB9TKlTgbrA7Ipq8s87pwgxtrSfmAItENo_uL6MDhv5n_G-HCqUR2YmgBF07dprhbwAsVOkpvv07H0CmYrMC7oss27oeIT5pUKbejBWQ1gcik\",\"keys\":{\"p256dh\":\"BOpf2C_Lt26VMbY9JfLCSEKfe3-MZ89KF3rDpZqBdweckBxvaw753hOj0ox5isqoBki8UgPox7FsgTCZ3CwDa5s=\",\"auth\":\"YupUeBKECwzdSwHNre11HA==\"}}",
                 Subscription.class
         );

@@ -3,6 +3,7 @@ package nl.martijndwars.webpush;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
@@ -11,6 +12,7 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.BigIntegers;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 
@@ -28,11 +30,11 @@ public class Utils {
      * @param publicKey
      * @return
      */
-    public static byte[] savePublicKey(ECPublicKey publicKey) {
+    public static byte[] encode(ECPublicKey publicKey) {
         return publicKey.getQ().getEncoded(false);
     }
 
-    public static byte[] savePrivateKey(ECPrivateKey privateKey) {
+    public static byte[] encode(ECPrivateKey privateKey) {
         return privateKey.getD().toByteArray();
     }
 
@@ -70,5 +72,89 @@ public class Utils {
         KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM, PROVIDER_NAME);
 
         return keyFactory.generatePrivate(privateKeySpec);
+    }
+
+    /**
+     * Load a public key from the private key.
+     *
+     * @param privateKey
+     * @return
+     */
+    public static ECPublicKey loadPublicKey(ECPrivateKey privateKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM, PROVIDER_NAME);
+        ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec(CURVE);
+        ECPoint Q = ecSpec.getG().multiply(privateKey.getD());
+        byte[] publicDerBytes = Q.getEncoded(false);
+        ECPoint point = ecSpec.getCurve().decodePoint(publicDerBytes);
+        ECPublicKeySpec pubSpec = new ECPublicKeySpec(point, ecSpec);
+
+        return (ECPublicKey) keyFactory.generatePublic(pubSpec);
+    }
+
+    /**
+     * Verify that the private key belongs to the public key.
+     *
+     * @param privateKey
+     * @param publicKey
+     * @return
+     */
+    public static boolean verifyKeyPair(PrivateKey privateKey, PublicKey publicKey) {
+        ECNamedCurveParameterSpec curveParameters = ECNamedCurveTable.getParameterSpec(CURVE);
+        ECPoint g = curveParameters.getG();
+        ECPoint sG = g.multiply(((java.security.interfaces.ECPrivateKey) privateKey).getS());
+
+        return sG.equals(((ECPublicKey) publicKey).getQ());
+    }
+
+    /**
+     * Utility to concat byte arrays
+     */
+    public static byte[] concat(byte[]... arrays) {
+        int lastPos = 0;
+
+        byte[] combined = new byte[combinedLength(arrays)];
+
+        for (byte[] array : arrays) {
+            if (array == null) {
+                continue;
+            }
+
+            System.arraycopy(array, 0, combined, lastPos, array.length);
+
+            lastPos += array.length;
+        }
+
+        return combined;
+    }
+
+    /**
+     * Compute combined array length
+     */
+    public static int combinedLength(byte[]... arrays) {
+        int combinedLength = 0;
+
+        for (byte[] array : arrays) {
+            if (array == null) {
+                continue;
+            }
+
+            combinedLength += array.length;
+        }
+
+        return combinedLength;
+    }
+
+    /**
+     * Create a byte array of the given length from the given integer.
+     *
+     * @param integer
+     * @param size
+     * @return
+     */
+    public static byte[] toByteArray(int integer, int size) {
+        ByteBuffer buffer = ByteBuffer.allocate(size);
+        buffer.putInt(integer);
+
+        return buffer.array();
     }
 }
