@@ -1,28 +1,31 @@
-dist: trusty
-
-sudo: required
-
 language: java
-
+sudo: required
 jdk:
+  - openjdk8
+  - openjdk11
   - oraclejdk8
-
+  - oraclejdk11
+env:
+  - JAVA_OPTS=-Dfile.encoding=cp1252
+  - JAVA_OPTS=-Dfile.encoding=UTF-8
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 before_install:
-  - nvm install node
-
+  - nvm i node
 install:
-  - npm install web-push-testing-service@0.4.0 -g
-
+  - npm i -g github:Minishlink/web-push-testing-service#update/deps
 before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start || echo \"Unable to start virtual display.\""
   - sleep 3
-
 script:
   - web-push-testing-service start wpts
-  - ./gradlew test
+  - ./gradlew clean check
   - web-push-testing-service stop wpts
-
-env:
-  - JAVA_OPTS=-Dfile.encoding=cp1252
-  - JAVA_OPTS=-Dfile.encoding=UTF-8
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - ~/.selenium-assistant
+    - node_modules

@@ -74,8 +74,7 @@ public class SeleniumTests {
                 new Configuration("chrome", "unstable", PUBLIC_KEY_NO_PADDING),
 
                 new Configuration("firefox", "stable", PUBLIC_KEY_NO_PADDING),
-                new Configuration("firefox", "beta", PUBLIC_KEY_NO_PADDING),
-                new Configuration("firefox", "unstable", PUBLIC_KEY_NO_PADDING)
+                new Configuration("firefox", "beta", PUBLIC_KEY_NO_PADDING)
         );
     }
 }

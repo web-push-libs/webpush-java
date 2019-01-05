@@ -157,7 +157,7 @@ public class PushService {
     }
 
     public Future<HttpResponse> sendAsync(Notification notification) throws GeneralSecurityException, IOException, JoseException {
-        return sendAsync(notification, Encoding.AESGCM);
+        return sendAsync(notification, Encoding.AES128GCM);
     }
 
     /**
