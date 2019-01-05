@@ -1,10 +1,10 @@
 package nl.martijndwars.webpush.selenium;
 
-import org.apache.commons.io.IOUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
@@ -12,6 +12,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -55,7 +56,14 @@ public class TestingService {
         jsonObject.addProperty("testSuiteId", testSuiteId);
         jsonObject.addProperty("browserName", configuration.browser);
         jsonObject.addProperty("browserVersion", configuration.version);
-        jsonObject.addProperty("vapidPublicKey", configuration.publicKey);
+
+        if (configuration.gcmSenderId != null) {
+            jsonObject.addProperty("gcmSenderId", configuration.gcmSenderId);
+        }
+
+        if (configuration.publicKey != null) {
+            jsonObject.addProperty("vapidPublicKey", configuration.publicKey);
+        }
 
         HttpEntity entity = new StringEntity(jsonObject.toString(), ContentType.APPLICATION_JSON);
 

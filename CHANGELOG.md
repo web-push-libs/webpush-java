@@ -1,3 +1,8 @@
+# 5.0.1
+
+* Bugfix: Only verify the VAPID key pair if the keys are actually present (fixes #73).
+* Improvement: Add test configurations for GCM-only to the selenium test suite.
+
 # 5.0.0
 
 * Use aes128gcm as the default encoding (#75).
