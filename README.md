@@ -118,8 +118,8 @@ Use `sendAsync` instead of `send` to get a `Future<HttpResponse>`:
 pushService.sendAsync(notification);
 ```
 
-See [doc/UsageExample.md](https://github.com/web-push-libs/webpush-java/blob/master/doc/UsageExample.md)
-for detailed usage instructions. If you plan on using VAPID, read [doc/VAPID.md](https://github.com/web-push-libs/webpush-java/blob/master/doc/VAPID.md).
+See [wiki/Usage-Example](https://github.com/web-push-libs/webpush-java/wiki/Usage-Example)
+for detailed usage instructions. If you plan on using VAPID, read [wiki/VAPID](https://github.com/web-push-libs/webpush-java/wiki/VAPID).
 
 ## Testing
 
