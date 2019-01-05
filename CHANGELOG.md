@@ -1,3 +1,8 @@
+# 5.0.0
+
+* Use aes128gcm as the default encoding (#75).
+* Remove BouncyCastle JAR from source and let Gradle put together the class path for the CLI.
+
 # 4.0.0
 
 * Support [aes128gcm content encoding](https://tools.ietf.org/html/draft-ietf-httpbis-encryption-encoding-09#section-2) (#72)

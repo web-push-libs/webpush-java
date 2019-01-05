@@ -30,7 +30,7 @@ dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.4'
 
     // For cryptographic operations
-    compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.54'
+    shadow group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.54'
 
     // For creating and signing JWT
     compile group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.6.4'
@@ -69,14 +69,8 @@ compileTestJava {
 
 mainClassName = 'nl.martijndwars.webpush.cli.Cli'
 
-shadowJar {
-    // BouncyCastle JAR is signed; it cannot be extracted and merged into the fat JAR.
-    dependencies {
-        exclude dependency(group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.54')
-    }
-    manifest {
-        attributes 'Class-Path': '../../lib/bcprov-jdk15on-154.jar'
-    }
+run {
+    classpath 'bcprov-jdk15on-154.jar'
 }
 
 test {
