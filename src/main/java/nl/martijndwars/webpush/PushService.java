@@ -171,7 +171,11 @@ public class PushService {
      * @throws JoseException
      */
     public HttpPost preparePost(Notification notification, Encoding encoding) throws GeneralSecurityException, IOException, JoseException {
-        assert (Utils.verifyKeyPair(privateKey, publicKey));
+        if (privateKey != null && publicKey != null) {
+            if (!Utils.verifyKeyPair(privateKey, publicKey)) {
+                throw new IllegalStateException("Public key and private key do not match.");
+            }
+        }
 
         Encrypted encrypted = encrypt(
                 notification.getPayload(),
