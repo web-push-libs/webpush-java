@@ -123,22 +123,28 @@ for detailed usage instructions. If you plan on using VAPID, read [wiki/VAPID](h
 
 ## Testing
 
-Our integration tests use [Web Push Testing Service (WPTS)](https://github.com/GoogleChromeLabs/web-push-testing-service) to handle the Selenium and browser orchestrating. To install WPTS:
+The integration tests use [Web Push Testing Service (WPTS)](https://github.com/GoogleChromeLabs/web-push-testing-service) to handle the Selenium and browser orchestrating. We use a forked version that fixes a bug on macOS. To install WPTS:
 
 ```
-npm install web-push-testing-service -g
+npm i -g github:MartijnDwars/web-push-testing-service#bump-selenium-assistant
 ```
 
-Then, to start WPTS:
+Then start WPTS:
 
 ```
 web-push-testing-service start wpts
 ```
 
-Finally, to run all tests:
+Then run the tests:
 
 ```
-./gradlew test
+./gradlew clean test
+```
+
+Finally, stop WPTS:
+
+```
+web-push-testing-service stop wpts
 ```
 
 ## FAQ

@@ -80,9 +80,6 @@ test {
         events 'PASSED', 'FAILED', 'SKIPPED'
         showStandardStreams true
     }
-
-    // TODO: Make the other test proper unit tests and remove this filter.
-    include '**/SeleniumTests.class'
 }
 
 task javadocJar(type: Jar) {
