@@ -1,4 +1,4 @@
-#/usr/bin/env sh
+#!/usr/bin/env sh
 set -eu
 
 if [ "$#" -ne 2 ]; then
