@@ -95,6 +95,10 @@ public class Notification {
         return getEndpoint().indexOf("https://android.googleapis.com/gcm/send") == 0;
     }
 
+    public boolean isFcm() {
+        return getEndpoint().indexOf("https://fcm.googleapis.com/fcm/send") == 0;
+    }
+
     public int getTTL() {
         return ttl;
     }
