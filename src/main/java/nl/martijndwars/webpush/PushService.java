@@ -244,6 +244,8 @@ public class PushService {
             } else {
                 headers.put("Crypto-Key", "p256ecdsa=" + Base64Encoder.encodeUrl(pk));
             }
+        } else if (notification.isFcm() && gcmApiKey != null) {
+            headers.put("Authorization", "key=" + gcmApiKey);
         }
 
         for (Map.Entry<String, String> entry : headers.entrySet()) {
