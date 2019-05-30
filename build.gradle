@@ -70,7 +70,7 @@ compileTestJava {
 mainClassName = 'nl.martijndwars.webpush.cli.Cli'
 
 run {
-    classpath 'bcprov-jdk15on-154.jar'
+    classpath configurations.shadow.files
 }
 
 test {
