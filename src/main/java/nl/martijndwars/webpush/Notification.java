@@ -50,6 +50,10 @@ public class Notification {
         this(endpoint, (ECPublicKey) userPublicKey, userAuth, payload, ttl);
     }
 
+    public Notification(String endpoint, String userPublicKey, String userAuth, byte[] payload, int ttl)  throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        this(endpoint, Utils.loadPublicKey(userPublicKey), Base64Encoder.decode(userAuth), payload, ttl);
+    }
+
     public Notification(String endpoint, PublicKey userPublicKey, byte[] userAuth, byte[] payload) {
         this(endpoint, userPublicKey, userAuth, payload, 2419200);
     }
