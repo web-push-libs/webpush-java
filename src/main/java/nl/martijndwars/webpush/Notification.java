@@ -122,15 +122,15 @@ public class Notification {
 
     public static class NotificationBuilder {
         private String endpoint = null;
-        private String userPublicKey = null;
-        private String userAuth = null;
+        private ECPublicKey userPublicKey = null;
+        private byte[] userAuth = null;
         private byte[] payload = null;
         private int ttl = (int) TTL.getSeconds();
 
         private NotificationBuilder() {
         }
 
-        public Notification build() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        public Notification build() {
             return new Notification(endpoint, userPublicKey, userAuth, payload, ttl);
         }
 
@@ -138,21 +138,36 @@ public class Notification {
             this.endpoint = endpoint;
             return this;
         }
-        public NotificationBuilder userPublicKey(String publicKey) {
-            this.userPublicKey = publicKey;
+
+        public NotificationBuilder userPublicKey(PublicKey publicKey) {
+            this.userPublicKey = (ECPublicKey) publicKey;
             return this;
         }
+
+        public NotificationBuilder userPublicKey(String publicKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+            this.userPublicKey = (ECPublicKey) Utils.loadPublicKey(publicKey);
+            return this;
+        }
+
         public NotificationBuilder userAuth(String userAuth) {
+            this.userAuth = Base64Encoder.decode(userAuth);
+            return this;
+        }
+
+        public NotificationBuilder userAuth(byte[] userAuth) {
             this.userAuth = userAuth;
             return this;
         }
+
         public NotificationBuilder payload(byte[] payload) {
             this.payload = payload;
             return this;
         }
+
         public NotificationBuilder ttl(int ttl) {
             this.ttl = ttl;
             return this;
         }
     }
+
 }
