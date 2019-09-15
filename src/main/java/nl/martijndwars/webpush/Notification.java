@@ -112,4 +112,44 @@ public class Notification {
 
         return url.getProtocol() + "://" + url.getHost();
     }
+
+    public static NotificationBuilder builder() {
+        return new Notification.NotificationBuilder();
+    }
+
+    public static class NotificationBuilder {
+        private String endpoint;
+        private String userPublicKey;
+        private String userAuth;
+        private byte[] payload;
+        private int ttl;
+
+        private NotificationBuilder() {
+        }
+
+        public Notification build() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+            return new Notification(endpoint, userPublicKey, userAuth, payload, ttl);
+        }
+
+        public NotificationBuilder endpoint(String endpoint) {
+            this.endpoint = endpoint;
+            return this;
+        }
+        public NotificationBuilder userPublicKey(String publicKey) {
+            this.userPublicKey = publicKey;
+            return this;
+        }
+        public NotificationBuilder userAuth(String userAuth) {
+            this.userAuth = userAuth;
+            return this;
+        }
+        public NotificationBuilder payload(byte[] payload) {
+            this.payload = payload;
+            return this;
+        }
+        public NotificationBuilder ttl(int ttl) {
+            this.ttl = ttl;
+            return this;
+        }
+    }
 }
