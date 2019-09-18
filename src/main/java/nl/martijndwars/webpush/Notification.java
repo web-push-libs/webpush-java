@@ -1,6 +1,5 @@
 package nl.martijndwars.webpush;
 
-import java.time.Duration;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
 
 import java.net.MalformedURLException;
@@ -38,7 +37,8 @@ public class Notification {
      */
     private final int ttl;
 
-    private static Duration TTL = Duration.ofDays(28);
+    private static final int ONE_DAY_DURATION_IN_SECONDS = 86400;
+    private static int DEFAULT_TTL = 28 * ONE_DAY_DURATION_IN_SECONDS;
 
 
     public Notification(String endpoint, ECPublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl) {
@@ -58,7 +58,7 @@ public class Notification {
     }
 
     public Notification(String endpoint, PublicKey userPublicKey, byte[] userAuth, byte[] payload) {
-        this(endpoint, userPublicKey, userAuth, payload, (int) TTL.getSeconds());
+        this(endpoint, userPublicKey, userAuth, payload, DEFAULT_TTL);
     }
 
     public Notification(String endpoint, String userPublicKey, String userAuth, byte[] payload) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
@@ -125,7 +125,7 @@ public class Notification {
         private ECPublicKey userPublicKey = null;
         private byte[] userAuth = null;
         private byte[] payload = null;
-        private int ttl = (int) TTL.getSeconds();
+        private int ttl = DEFAULT_TTL;
 
         private NotificationBuilder() {
         }
