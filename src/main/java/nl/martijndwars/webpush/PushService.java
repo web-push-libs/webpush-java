@@ -190,6 +190,10 @@ public class PushService {
         HttpPost httpPost = new HttpPost(notification.getEndpoint());
         httpPost.addHeader("TTL", String.valueOf(notification.getTTL()));
 
+        if (notification.hasUrgency()) {
+            httpPost.addHeader("urgency", notification.getUrgency().getHeaderValue());
+        }
+
         Map<String, String> headers = new HashMap<>();
 
         if (notification.hasPayload()) {

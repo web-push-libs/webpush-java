@@ -33,21 +33,30 @@ public class Notification {
     private final byte[] payload;
 
     /**
+     * Push Message Urgency
+     *
+     *  @see <a href="https://tools.ietf.org/html/rfc8030#section-5.3">Push Message Urgency</a>
+     *
+     */
+    private Urgency urgency;
+
+    /**
      * Time in seconds that the push message is retained by the push service
      */
     private final int ttl;
 
 
-    public Notification(String endpoint, ECPublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl) {
+    public Notification(String endpoint, ECPublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl, Urgency urgency) {
         this.endpoint = endpoint;
         this.userPublicKey = userPublicKey;
         this.userAuth = userAuth;
         this.payload = payload;
         this.ttl = ttl;
+        this.urgency = urgency;
     }
 
     public Notification(String endpoint, PublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl) {
-        this(endpoint, (ECPublicKey) userPublicKey, userAuth, payload, ttl);
+        this(endpoint, (ECPublicKey) userPublicKey, userAuth, payload, ttl, null);
     }
 
     public Notification(String endpoint, PublicKey userPublicKey, byte[] userAuth, byte[] payload) {
@@ -64,6 +73,11 @@ public class Notification {
 
     public Notification(Subscription subscription, String payload) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
         this(subscription.endpoint, subscription.keys.p256dh, subscription.keys.auth, payload);
+    }
+
+    public Notification(Subscription subscription, String payload, Urgency urgency) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        this(subscription.endpoint, subscription.keys.p256dh, subscription.keys.auth, payload);
+        this.urgency = urgency;
     }
 
     public String getEndpoint() {
@@ -86,6 +100,10 @@ public class Notification {
         return getPayload().length > 0;
     }
 
+    public boolean hasUrgency() {
+        return urgency != null;
+    }
+
     /**
      * Detect if the notification is for a GCM-based subscription
      *
@@ -101,6 +119,10 @@ public class Notification {
 
     public int getTTL() {
         return ttl;
+    }
+
+    public Urgency getUrgency() {
+        return urgency;
     }
 
     public String getOrigin() throws MalformedURLException {
