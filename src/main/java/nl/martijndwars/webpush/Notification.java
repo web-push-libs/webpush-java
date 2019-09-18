@@ -71,6 +71,11 @@ public class Notification {
         this(endpoint, Utils.loadPublicKey(userPublicKey), Base64Encoder.decode(userAuth), payload.getBytes(UTF_8));
     }
 
+	public Notification(String endpoint, String userPublicKey, String userAuth, String payload, Urgency urgency) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+		this(endpoint, Utils.loadPublicKey(userPublicKey), Base64Encoder.decode(userAuth), payload.getBytes(UTF_8));
+		this.urgency = urgency;
+	}
+
     public Notification(Subscription subscription, String payload) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
         this(subscription.endpoint, subscription.keys.p256dh, subscription.keys.auth, payload);
     }
