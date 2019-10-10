@@ -45,6 +45,9 @@ public class Notification {
      */
     private final int ttl;
 
+    private static final int ONE_DAY_DURATION_IN_SECONDS = 86400;
+    private static int DEFAULT_TTL = 28 * ONE_DAY_DURATION_IN_SECONDS;
+
 
     public Notification(String endpoint, ECPublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl, Urgency urgency) {
         this.endpoint = endpoint;
@@ -59,8 +62,12 @@ public class Notification {
         this(endpoint, (ECPublicKey) userPublicKey, userAuth, payload, ttl, null);
     }
 
+    public Notification(String endpoint, String userPublicKey, String userAuth, byte[] payload, int ttl)  throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        this(endpoint, Utils.loadPublicKey(userPublicKey), Base64Encoder.decode(userAuth), payload, ttl);
+    }
+
     public Notification(String endpoint, PublicKey userPublicKey, byte[] userAuth, byte[] payload) {
-        this(endpoint, userPublicKey, userAuth, payload, 2419200);
+        this(endpoint, userPublicKey, userAuth, payload, DEFAULT_TTL);
     }
 
     public Notification(String endpoint, String userPublicKey, String userAuth, byte[] payload) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
@@ -135,4 +142,59 @@ public class Notification {
 
         return url.getProtocol() + "://" + url.getHost();
     }
+
+    public static NotificationBuilder builder() {
+        return new Notification.NotificationBuilder();
+    }
+
+    public static class NotificationBuilder {
+        private String endpoint = null;
+        private ECPublicKey userPublicKey = null;
+        private byte[] userAuth = null;
+        private byte[] payload = null;
+        private int ttl = DEFAULT_TTL;
+
+        private NotificationBuilder() {
+        }
+
+        public Notification build() {
+            return new Notification(endpoint, userPublicKey, userAuth, payload, ttl);
+        }
+
+        public NotificationBuilder endpoint(String endpoint) {
+            this.endpoint = endpoint;
+            return this;
+        }
+
+        public NotificationBuilder userPublicKey(PublicKey publicKey) {
+            this.userPublicKey = (ECPublicKey) publicKey;
+            return this;
+        }
+
+        public NotificationBuilder userPublicKey(String publicKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+            this.userPublicKey = (ECPublicKey) Utils.loadPublicKey(publicKey);
+            return this;
+        }
+
+        public NotificationBuilder userAuth(String userAuth) {
+            this.userAuth = Base64Encoder.decode(userAuth);
+            return this;
+        }
+
+        public NotificationBuilder userAuth(byte[] userAuth) {
+            this.userAuth = userAuth;
+            return this;
+        }
+
+        public NotificationBuilder payload(byte[] payload) {
+            this.payload = payload;
+            return this;
+        }
+
+        public NotificationBuilder ttl(int ttl) {
+            this.ttl = ttl;
+            return this;
+        }
+    }
+
 }
