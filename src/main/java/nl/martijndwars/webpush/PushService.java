@@ -203,6 +203,10 @@ public class PushService {
             httpPost.addHeader("Urgency", notification.getUrgency().getHeaderValue());
         }
 
+        if (notification.hasTopic()) {
+            httpPost.addHeader("Topic", notification.getTopic());
+        }
+
         Map<String, String> headers = new HashMap<>();
 
         if (notification.hasPayload()) {

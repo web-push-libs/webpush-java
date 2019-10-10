@@ -41,6 +41,14 @@ public class Notification {
     private Urgency urgency;
 
     /**
+     * Push Message Topic
+     *
+     *  @see <a href="https://tools.ietf.org/html/rfc8030#section-5.4">Replacing Push Messages</a>
+     *
+     */
+    private String topic;
+
+    /**
      * Time in seconds that the push message is retained by the push service
      */
     private final int ttl;
@@ -48,18 +56,18 @@ public class Notification {
     private static final int ONE_DAY_DURATION_IN_SECONDS = 86400;
     private static int DEFAULT_TTL = 28 * ONE_DAY_DURATION_IN_SECONDS;
 
-
-    public Notification(String endpoint, ECPublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl, Urgency urgency) {
+    public Notification(String endpoint, ECPublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl, Urgency urgency, String topic) {
         this.endpoint = endpoint;
         this.userPublicKey = userPublicKey;
         this.userAuth = userAuth;
         this.payload = payload;
         this.ttl = ttl;
         this.urgency = urgency;
+        this.topic = topic;
     }
 
     public Notification(String endpoint, PublicKey userPublicKey, byte[] userAuth, byte[] payload, int ttl) {
-        this(endpoint, (ECPublicKey) userPublicKey, userAuth, payload, ttl, null);
+        this(endpoint, (ECPublicKey) userPublicKey, userAuth, payload, ttl, null, null);
     }
 
     public Notification(String endpoint, String userPublicKey, String userAuth, byte[] payload, int ttl)  throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
@@ -116,6 +124,10 @@ public class Notification {
         return urgency != null;
     }
 
+    public boolean hasTopic() {
+        return topic != null;
+    }
+
     /**
      * Detect if the notification is for a GCM-based subscription
      *
@@ -137,6 +149,10 @@ public class Notification {
         return urgency;
     }
 
+    public String getTopic() {
+        return topic;
+    }
+
     public String getOrigin() throws MalformedURLException {
         URL url = new URL(getEndpoint());
 
@@ -153,12 +169,14 @@ public class Notification {
         private byte[] userAuth = null;
         private byte[] payload = null;
         private int ttl = DEFAULT_TTL;
+        private Urgency urgency = null;
+        private String topic = null;
 
         private NotificationBuilder() {
         }
 
         public Notification build() {
-            return new Notification(endpoint, userPublicKey, userAuth, payload, ttl);
+            return new Notification(endpoint, userPublicKey, userAuth, payload, ttl, urgency, topic);
         }
 
         public NotificationBuilder endpoint(String endpoint) {
@@ -191,8 +209,23 @@ public class Notification {
             return this;
         }
 
+        public NotificationBuilder payload(String payload) {
+            this.payload = payload.getBytes(UTF_8);
+            return this;
+        }
+
         public NotificationBuilder ttl(int ttl) {
             this.ttl = ttl;
+            return this;
+        }
+
+        public NotificationBuilder urgency(Urgency urgency) {
+            this.urgency = urgency;
+            return this;
+        }
+
+        public NotificationBuilder topic(String topic) {
+            this.topic = topic;
             return this;
         }
     }
