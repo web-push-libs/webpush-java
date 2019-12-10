@@ -48,7 +48,7 @@ dependencies {
     testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
 
     // For reading the demo vapid keypair from a pem file
-    testCompile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.57'
+    testCompile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.64'
 
     // For verifying Base64Encoder results in unit tests
     testCompile group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'
