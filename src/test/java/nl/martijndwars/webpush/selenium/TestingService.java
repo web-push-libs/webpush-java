@@ -33,7 +33,7 @@ public class TestingService {
     public int startTestSuite() throws IOException {
         String startTestSuite = request(baseUrl + "start-test-suite/");
 
-        JsonElement root = new JsonParser().parse(startTestSuite);
+        JsonElement root = JsonParser.parseString(startTestSuite);
 
         return root
                 .getAsJsonObject()
@@ -129,7 +129,7 @@ public class TestingService {
             String json = EntityUtils.toString(httpResponse.getEntity());
 
             if (httpResponse.getStatusLine().getStatusCode() != 200) {
-                JsonElement root = new JsonParser().parse(json);
+                JsonElement root = JsonParser.parseString(json);
                 JsonObject error = root.getAsJsonObject().get("error").getAsJsonObject();
 
                 String errorId = error.get("id").getAsString();
@@ -150,7 +150,7 @@ public class TestingService {
      * @param response
      */
     protected JsonObject getData(String response) {
-        JsonElement root = new JsonParser().parse(response);
+        JsonElement root = JsonParser.parseString(response);
 
         return root
                 .getAsJsonObject()
