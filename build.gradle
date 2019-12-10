@@ -30,7 +30,7 @@ dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.4'
 
     // For cryptographic operations
-    shadow group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.54'
+    shadow group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.64'
 
     // For creating and signing JWT
     compile group: 'org.bitbucket.b_c', name: 'jose4j', version: '0.7.0'
