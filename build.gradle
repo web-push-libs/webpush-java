@@ -42,7 +42,7 @@ dependencies {
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.2'
 
     // For running JUnit tests
-    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.2'
+    testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.2'
 
     // For turning InputStream to String
     testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
