@@ -194,6 +194,11 @@ public class Notification {
             return this;
         }
 
+        public NotificationBuilder userPublicKey(byte[] publicKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+            this.userPublicKey = (ECPublicKey) Utils.loadPublicKey(publicKey);
+            return this;
+        }
+
         public NotificationBuilder userAuth(String userAuth) {
             this.userAuth = Base64Encoder.decode(userAuth);
             return this;

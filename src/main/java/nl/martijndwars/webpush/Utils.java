@@ -46,6 +46,15 @@ public class Utils {
      */
     public static PublicKey loadPublicKey(String encodedPublicKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] decodedPublicKey = Base64Encoder.decode(encodedPublicKey);
+        return loadPublicKey(decodedPublicKey);
+    }
+
+    /**
+     * Load the public key from a byte array. 
+     *
+     * @param decodedPublicKey
+     */
+    public static PublicKey loadPublicKey(byte[] decodedPublicKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM, PROVIDER_NAME);
         ECParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(CURVE);
         ECCurve curve = parameterSpec.getCurve();
@@ -66,6 +75,19 @@ public class Utils {
      */
     public static PrivateKey loadPrivateKey(String encodedPrivateKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] decodedPrivateKey = Base64Encoder.decode(encodedPrivateKey);
+        return loadPrivateKey(decodedPrivateKey);
+    }
+
+    /**
+     * Load the private key from a byte array
+     *
+     * @param decodedPrivateKey
+     * @return
+     * @throws NoSuchProviderException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     */
+    public static PrivateKey loadPrivateKey(byte[] decodedPrivateKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         BigInteger s = BigIntegers.fromUnsignedByteArray(decodedPrivateKey);
         ECParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(CURVE);
         ECPrivateKeySpec privateKeySpec = new ECPrivateKeySpec(s, parameterSpec);
