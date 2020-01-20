@@ -39,7 +39,7 @@ dependencies {
     testCompile group: 'org.apache.httpcomponents', name: 'fluent-hc', version: '4.5.10'
 
     // For testing, obviously
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.2'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.0'
 
     // For running JUnit tests
     testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.2'
