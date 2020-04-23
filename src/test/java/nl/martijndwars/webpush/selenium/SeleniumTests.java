@@ -65,14 +65,14 @@ public class SeleniumTests {
         return Stream.of(
                 new Configuration("chrome", "stable", null, GCM_SENDER_ID),
                 new Configuration("chrome", "beta", null, GCM_SENDER_ID),
-                new Configuration("chrome", "unstable", null, GCM_SENDER_ID),
+                //new Configuration("chrome", "unstable", null, GCM_SENDER_ID), See #90
 
                 new Configuration("firefox", "stable", null, GCM_SENDER_ID),
                 new Configuration("firefox", "beta", null, GCM_SENDER_ID),
 
                 new Configuration("chrome", "stable", PUBLIC_KEY_NO_PADDING, null),
                 new Configuration("chrome", "beta", PUBLIC_KEY_NO_PADDING, null),
-                new Configuration("chrome", "unstable", PUBLIC_KEY_NO_PADDING, null),
+                //new Configuration("chrome", "unstable", PUBLIC_KEY_NO_PADDING, null), See #90
 
                 new Configuration("firefox", "stable", PUBLIC_KEY_NO_PADDING, null),
                 new Configuration("firefox", "beta", PUBLIC_KEY_NO_PADDING, null)

@@ -34,7 +34,8 @@ public class PushService {
     private String gcmApiKey;
 
     /**
-     * Subject used in the JWT payload (for VAPID)
+     * Subject used in the JWT payload (for VAPID). When left as null, then no subject will be used
+     * (RFC-8292 2.1 says that it is optional)
      */
     private String subject;
 
@@ -55,15 +56,23 @@ public class PushService {
         this.gcmApiKey = gcmApiKey;
     }
 
-    public PushService(KeyPair keyPair, String subject) {
+    public PushService(KeyPair keyPair) {
         this.publicKey = keyPair.getPublic();
         this.privateKey = keyPair.getPrivate();
+    }
+
+    public PushService(KeyPair keyPair, String subject) {
+        this(keyPair);
         this.subject = subject;
     }
 
-    public PushService(String publicKey, String privateKey, String subject) throws GeneralSecurityException {
+    public PushService(String publicKey, String privateKey) throws GeneralSecurityException {
         this.publicKey = Utils.loadPublicKey(publicKey);
         this.privateKey = Utils.loadPrivateKey(privateKey);
+    }
+
+    public PushService(String publicKey, String privateKey, String subject) throws GeneralSecurityException {
+        this(publicKey, privateKey);
         this.subject = subject;
     }
 
@@ -190,6 +199,14 @@ public class PushService {
         HttpPost httpPost = new HttpPost(notification.getEndpoint());
         httpPost.addHeader("TTL", String.valueOf(notification.getTTL()));
 
+        if (notification.hasUrgency()) {
+            httpPost.addHeader("Urgency", notification.getUrgency().getHeaderValue());
+        }
+
+        if (notification.hasTopic()) {
+            httpPost.addHeader("Topic", notification.getTopic());
+        }
+
         Map<String, String> headers = new HashMap<>();
 
         if (notification.hasPayload()) {
@@ -222,7 +239,9 @@ public class PushService {
             JwtClaims claims = new JwtClaims();
             claims.setAudience(notification.getOrigin());
             claims.setExpirationTimeMinutesInTheFuture(12 * 60);
-            claims.setSubject(subject);
+            if (subject != null) {
+                claims.setSubject(subject);
+            }
 
             JsonWebSignature jws = new JsonWebSignature();
             jws.setHeader("typ", "JWT");
@@ -244,6 +263,8 @@ public class PushService {
             } else {
                 headers.put("Crypto-Key", "p256ecdsa=" + Base64Encoder.encodeUrl(pk));
             }
+        } else if (notification.isFcm() && gcmApiKey != null) {
+            headers.put("Authorization", "key=" + gcmApiKey);
         }
 
         for (Map.Entry<String, String> entry : headers.entrySet()) {

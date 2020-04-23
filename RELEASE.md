@@ -1,5 +1,7 @@
 # Release process
 
+0. Update CHANGELOG.md. Include changes to the source code, changes to the version of compile dependencies, etc. Do NOT include changes to the buildscript, version of test dependencies, etc.
+
 1. Update version string in `build.gradle` (1x), `README.md` (2x) to the new (non-SNAPSHOT) version.
 
 ```

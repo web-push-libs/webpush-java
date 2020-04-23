@@ -1,3 +1,9 @@
+# 5.1.0
+
+* Improvement: Add support for [urgency](https://tools.ietf.org/html/rfc8030#section-5.3) & [topic](https://tools.ietf.org/html/rfc8030#section-5.4) (contributed by jamie@checkin.tech).
+* Maintenance: Upgrade com.beust:jcommander to 1.78.
+* Maintenance: Upgrade org.bitbucket.b\_c:jose4j to 0.7.0.
+
 # 5.0.1
 
 * Bugfix: Only verify the VAPID key pair if the keys are actually present (fixes #73).
