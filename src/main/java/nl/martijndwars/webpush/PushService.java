@@ -49,6 +49,11 @@ public class PushService {
      */
     private PrivateKey privateKey;
 
+    /**
+     * The custom http client for changing default configurations
+     */
+    private CloseableHttpAsyncClient customHttpClient;
+
     public PushService() {
     }
 
@@ -78,7 +83,7 @@ public class PushService {
 
     /**
      * Encrypt the payload.
-     *
+     * <p>
      * Encryption uses Elliptic curve Diffie-Hellman (ECDH) cryptography over the prime256v1 curve.
      *
      * @param payload       Payload to encrypt.
@@ -159,7 +164,7 @@ public class PushService {
     public Future<HttpResponse> sendAsync(Notification notification, Encoding encoding) throws GeneralSecurityException, IOException, JoseException {
         HttpPost httpPost = preparePost(notification, encoding);
 
-        final CloseableHttpAsyncClient closeableHttpAsyncClient = HttpAsyncClients.createSystem();
+        final CloseableHttpAsyncClient closeableHttpAsyncClient = getHttpClient();
         closeableHttpAsyncClient.start();
 
         return closeableHttpAsyncClient.execute(httpPost, new ClosableCallback(closeableHttpAsyncClient));
@@ -272,6 +277,61 @@ public class PushService {
         }
 
         return httpPost;
+    }
+
+    /**
+     * Set the custom HttpClient with custom configurations
+     *
+     * @param httpClient
+     */
+    public void setCustomHttpClient(CloseableHttpAsyncClient httpClient) {
+        this.customHttpClient = httpClient;
+    }
+
+    /**
+     * Returns custom HttpClient
+     *
+     * @return CloseableHttpAsyncClient
+     */
+    public CloseableHttpAsyncClient getCustomHttpClient() {
+        return this.customHttpClient;
+    }
+
+    /**
+     * Start the custom HttpClient if possible
+     */
+    public void startCustomHttpClient() {
+        if (this.customHttpClient != null && !customHttpClient.isRunning()) {
+            this.customHttpClient.start();
+        }
+    }
+
+    /**
+     * Stop the custom HttpClient if possible
+     */
+    public void stopCustomHttpClient() throws IOException {
+        if (isCustomHttpClientAvailable()) {
+            this.customHttpClient.close();
+        }
+    }
+
+    /**
+     * Use custom http client if possible, otherwise create new client and send notification via this way
+     *
+     * @return ClosableHttpAsyncClient
+     */
+    private CloseableHttpAsyncClient getHttpClient() {
+        if (isCustomHttpClientAvailable()) {
+            return customHttpClient;
+        } else {
+            CloseableHttpAsyncClient closeableHttpAsyncClient = HttpAsyncClients.createSystem();
+            closeableHttpAsyncClient.start();
+            return closeableHttpAsyncClient;
+        }
+    }
+
+    private boolean isCustomHttpClientAvailable() {
+        return this.customHttpClient != null && this.customHttpClient.isRunning();
     }
 
     /**
