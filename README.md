@@ -132,41 +132,15 @@ npm install -g testcafe
 Then start the test server:
 
 ```
-./gradlew test --tests '*TestCafeTest*'
+./gradlew :startE2eTestServer
 ```
 
 Run the testcafe tests:
 
 ```
 #/usr/bin/env bash
-testcafe 'chrome --user-data-dir $(pwd)/testcafe/chrome' testcafe/test.js --hostname localhost --ports 12345,54321
+testcafe 'chrome --user-data-dir $(pwd)/testcafe/chrome' testcafe/test.js --hostname localhost --ports 12345,54321 --skip-js-errors
 testcafe 'firefox -profile $(pwd)/testcafe/firefox' testcafe/test.js --hostname localhost --ports 12345,54321
-```
-
-The integration tests use [Web Push Testing Service (WPTS)](https://github.com/GoogleChromeLabs/web-push-testing-service) to handle the Selenium and browser orchestrating.
-We use a forked version that fixes a bug on macOS.
-To install WPTS:
-
-```
-npm i -g github:MartijnDwars/web-push-testing-service#bump-selenium-assistant
-```
-
-Then start WPTS:
-
-```
-web-push-testing-service start wpts
-```
-
-Then run the tests:
-
-```
-./gradlew clean test
-```
-
-Finally, stop WPTS:
-
-```
-web-push-testing-service stop wpts
 ```
 
 ## FAQ

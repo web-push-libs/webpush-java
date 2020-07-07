@@ -81,6 +81,12 @@ tasks.named<Test>("test") {
     }
 }
 
+val startE2eTestServer = task<JavaExec>("startE2eTestServer") {
+    description = "Start e2e test server."
+    classpath = sourceSets["test"].runtimeClasspath
+    main = "nl.martijndwars.webpush.Webserver"
+}
+
 if (hasProperty("release")) {
     apply {
         from("release.gradle.kts")

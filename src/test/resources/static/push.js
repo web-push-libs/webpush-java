@@ -140,6 +140,6 @@ var broadcast = new BroadcastChannel('message-received');
 
 broadcast.onmessage = function (event) {
   var li = document.createElement('li');
-  li.innerText = event.data;
+  li.innerText = event.data.text;
   document.getElementById('messages').append(li);
 };

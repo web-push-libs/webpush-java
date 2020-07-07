@@ -1,4 +1,4 @@
-package nl.martijndwars.webpush.testcafe;
+package nl.martijndwars.webpush;
 
 import java.nio.file.Paths;
 import java.security.Security;
@@ -13,9 +13,6 @@ import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.server.handlers.resource.PathResourceManager;
-import nl.martijndwars.webpush.Notification;
-import nl.martijndwars.webpush.PushService;
-import nl.martijndwars.webpush.Subscription;
 import org.apache.http.HttpResponse;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 

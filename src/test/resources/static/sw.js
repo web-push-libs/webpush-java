@@ -6,7 +6,7 @@
 
 'use strict';
 
-const broadcast = new BroadcastChannel('message-received');
+var broadcast = new BroadcastChannel('message-received');
 
 console.log('Started', self);
 
@@ -26,7 +26,9 @@ self.addEventListener('push', function (event) {
     console.log('Push data: ' + data);
 
     // Broadcast message to the web page
-    broadcast.postMessage(event.data.text());
+    broadcast.postMessage({
+      text: event.data.text()
+    });
 
     if (isJson(data)) {
         var title = data.title;
