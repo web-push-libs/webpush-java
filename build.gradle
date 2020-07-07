@@ -15,7 +15,6 @@ group 'nl.martijndwars'
 version '5.1.1-SNAPSHOT'
 
 repositories {
-    mavenLocal()
     mavenCentral()
 }
 
@@ -52,6 +51,9 @@ dependencies {
 
     // For verifying Base64Encoder results in unit tests
     testCompile group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'
+
+    // To run a local webserver in the TestCafe tests
+    testCompile group: 'io.undertow', name: 'undertow-servlet', version: '2.1.3.Final'
 }
 
 wrapper {
