@@ -2,8 +2,10 @@ window.addEventListener('load', registerServiceWorker, false);
 
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
+        document.getElementById('service-worker').append('y');
         navigator.serviceWorker.register('/sw.js').then(initialiseState);
     } else {
+        document.getElementById('service-worker').append('n');
         console.warn('Service workers are not supported in this browser.');
     }
 }
@@ -13,28 +15,37 @@ function initialiseState() {
 
     if (!('showNotification' in ServiceWorkerRegistration.prototype)) {
         console.warn('Notifications aren\'t supported.');
+        document.getElementById('show-notification').append('n');
         return;
+    } else {
+        document.getElementById('show-notification').append('y');
     }
 
     if (Notification.permission === 'denied') {
         console.warn('The user has blocked notifications.');
+        document.getElementById('notification-permission').append('n');
         return;
+    } else {
+        document.getElementById('notification-permission').append('y');
     }
 
     if (!('PushManager' in window)) {
         console.warn('Push messaging isn\'t supported.');
+        document.getElementById('push-manager').append('n');
         return;
+    } else {
+        document.getElementById('push-manager').append('y');
     }
 
     //var readyPromise = navigator.serviceWorker.ready;
     var readyPromise = navigator.serviceWorker.getRegistration('./');
     readyPromise.then(function (serviceWorkerRegistration) {
         console.log('Service worker is ready.');
-        console.log(serviceWorkerRegistration.active && serviceWorkerRegistration.active.state)
+        document.getElementById('service-worker-ready').append('y');
 
         serviceWorkerRegistration.pushManager.getSubscription().then(function (subscription) {
             console.log('Got subscription');
-            console.log(subscription);
+            document.getElementById('subscription-ready').append('y');
 
             if (!subscription) {
                 subscribe();

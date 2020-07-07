@@ -1,6 +1,5 @@
 dist: bionic
 language: java
-sudo: required
 addons:
   chrome: stable
   firefox: latest
@@ -18,9 +17,6 @@ before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 before_install:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start || echo \"Unable to start virtual display.\""
-  - sleep 3
   - nvm i node
 install:
   - npm i -g testcafe
@@ -31,8 +27,8 @@ script:
   - ./gradlew clean check
   - ./gradlew :startE2eTestServer &
   - sleep 5
-  - testcafe 'chrome --user-data-dir $(pwd)/testcafe/chrome' testcafe/test.js --hostname localhost --ports 12345,54321 --skip-js-errors
-  - testcafe 'firefox -profile $(pwd)/testcafe/firefox' testcafe/test.js --hostname localhost --ports 12345,54321
+  - xvfb-run -a testcafe 'chrome --user-data-dir $(pwd)/testcafe/chrome' testcafe/test.js --hostname localhost --ports 12345,54321 --skip-js-errors
+  - xvfb-run -a testcafe 'firefox -profile $(pwd)/testcafe/firefox' testcafe/test.js --hostname localhost --ports 12345,54321
 cache:
   directories:
     - $HOME/.gradle/caches/
