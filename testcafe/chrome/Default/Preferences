@@ -1,0 +1,13 @@
+{
+    "profile": {
+        "content_settings": {
+            "exceptions": {
+                "notifications": {
+                    "http://localhost:12345,*": {
+                        "setting": 1
+                    }
+                }
+            }
+        }
+    }
+}
