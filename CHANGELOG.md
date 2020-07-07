@@ -1,3 +1,8 @@
+# 5.2.0
+
+* Maintenance: Upgrade Gradle to 6.5.1
+* Maintenance: Convert build script to use Kotlin DSL instead of Groovy DSL
+
 # 5.1.0
 
 * Improvement: Add support for [urgency](https://tools.ietf.org/html/rfc8030#section-5.3) & [topic](https://tools.ietf.org/html/rfc8030#section-5.4) (contributed by jamie@checkin.tech).

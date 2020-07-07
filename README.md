@@ -1,6 +1,6 @@
 # WebPush
 
-A Web Push library for Java 7. Supports payloads and VAPID.
+A Web Push library for Java 8. Supports payloads and VAPID.
 
 [![Build Status](https://travis-ci.org/web-push-libs/webpush-java.svg?branch=master)](https://travis-ci.org/web-push-libs/webpush-java)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.martijndwars/web-push/badge.svg)](https://search.maven.org/search?q=g:nl.martijndwars%20AND%20a:web-push)
@@ -123,7 +123,29 @@ for detailed usage instructions. If you plan on using VAPID, read [wiki/VAPID](h
 
 ## Testing
 
-The integration tests use [Web Push Testing Service (WPTS)](https://github.com/GoogleChromeLabs/web-push-testing-service) to handle the Selenium and browser orchestrating. We use a forked version that fixes a bug on macOS. To install WPTS:
+The e2e tests use testcafe. To install testcafe:
+
+```
+npm install -g testcafe
+```
+
+Then start the test server:
+
+```
+./gradlew test --tests '*TestCafeTest*'
+```
+
+Run the testcafe tests:
+
+```
+#/usr/bin/env bash
+testcafe 'chrome --user-data-dir $(pwd)/testcafe/chrome' testcafe/test.js --hostname localhost --ports 12345,54321
+testcafe 'firefox -profile $(pwd)/testcafe/firefox' testcafe/test.js --hostname localhost --ports 12345,54321
+```
+
+The integration tests use [Web Push Testing Service (WPTS)](https://github.com/GoogleChromeLabs/web-push-testing-service) to handle the Selenium and browser orchestrating.
+We use a forked version that fixes a bug on macOS.
+To install WPTS:
 
 ```
 npm i -g github:MartijnDwars/web-push-testing-service#bump-selenium-assistant
