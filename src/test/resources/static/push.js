@@ -45,16 +45,16 @@ function initialiseState() {
 
         serviceWorkerRegistration.pushManager.getSubscription().then(function (subscription) {
             console.log('Got subscription');
-            document.getElementById('subscription-ready').append('y');
-
+            console.log(subscription);
+            
             if (!subscription) {
-                subscribe();
-
-                return;
+                subscribe().then(function () {
+                    document.getElementById('subscription-ready').append('y');
+                });
+            } else {
+                sendSubscriptionToServer(subscription);
+                document.getElementById('subscription-ready').append('y');
             }
-
-            // Keep your server in sync with the latest subscriptionId
-            sendSubscriptionToServer(subscription);
         })
         .catch(function (err) {
             console.warn('Error during getSubscription()', err);
@@ -64,23 +64,29 @@ function initialiseState() {
 
 function subscribe() {
     const publicKey = base64UrlToUint8Array('BAPGG2IY3Vn48d_H8QNuVLRErkBI0L7oDOOCAMUBqYMTMTzukaIAuB5OOcmkdeRICcyQocEwD-oxVc81YXXZPRY');
+    const subscribeOptions = {
+        userVisibleOnly: true,
+        applicationServerKey: publicKey
+    };
 
     //var readyPromise = navigator.serviceWorker.ready;
     var readyPromise = navigator.serviceWorker.getRegistration('./');
 
-    readyPromise.then(function (serviceWorkerRegistration) {
-        serviceWorkerRegistration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: publicKey
-        })
-        .then(function (subscription) {
+    return readyPromise.then(function (serviceWorkerRegistration) {
+        document.getElementById('service-worker-ready-2').append('y');
+
+        return serviceWorkerRegistration.pushManager.subscribe(subscribeOptions).then(function (subscription) {
+            document.getElementById('subscription-ready').append('y');
+            document.getElementById('subscription-ready-2').append('y');
+
             return sendSubscriptionToServer(subscription);
-        })
-        .catch(function (e) {
+        }).catch(function (e) {
             if (Notification.permission === 'denied') {
                 console.warn('Permission for Notifications was denied');
+            	document.getElementById('subscription-ready-2').append('Permission denied');
             } else {
                 console.error('Unable to subscribe to push.', e);
+            	document.getElementById('subscription-ready-2').append('Unable to subscribe: ' + e);
             }
         });
     });
@@ -99,20 +105,6 @@ function sendSubscriptionToServer(subscription) {
     });
 
     return Promise.resolve();
-
-    // Normally, you would actually send the subscription to the server:
-    return fetch('/profile/subscription', {
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        method: 'POST',
-        body: JSON.stringify({
-            endpoint: subscription.endpoint,
-            key: key ? btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : '',
-            auth: auth ? btoa(String.fromCharCode.apply(null, new Uint8Array(auth))) : ''
-        })
-    });
 }
 
 function base64UrlToUint8Array(base64UrlData) {
