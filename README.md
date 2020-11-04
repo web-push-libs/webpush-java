@@ -1,6 +1,6 @@
 # WebPush
 
-A Web Push library for Java 7. Supports payloads and VAPID.
+A Web Push library for Java 8. Supports payloads and VAPID.
 
 [![Build Status](https://travis-ci.org/web-push-libs/webpush-java.svg?branch=master)](https://travis-ci.org/web-push-libs/webpush-java)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.martijndwars/web-push/badge.svg)](https://search.maven.org/search?q=g:nl.martijndwars%20AND%20a:web-push)
@@ -19,7 +19,7 @@ For Maven, add the following dependency to `pom.xml`:
 <dependency>
     <groupId>nl.martijndwars</groupId>
     <artifactId>web-push</artifactId>
-    <version>5.1.1-SNAPSHOT</version>
+    <version>${web-push.version}</version>
 </dependency>
 ```
 
@@ -94,7 +94,7 @@ First, make sure you add the BouncyCastle security provider:
 Security.addProvider(new BouncyCastleProvider());
 ```
 
-Then, create an instance of the push service:
+Then, create an instance of the push service, either `nl.martijndwars.webpush.PushService` for synchronous blocking HTTP calls, or `nl.martijndwars.webpush.PushAsyncService` for asynchronous non-blocking HTTP calls:
 
 ```java
 PushService pushService = new PushService(...);
@@ -110,12 +110,6 @@ To send a push notification:
 
 ```java
 pushService.send(notification);
-```
-
-Use `sendAsync` instead of `send` to get a `Future<HttpResponse>`:
-
-```java
-pushService.sendAsync(notification);
 ```
 
 See [wiki/Usage-Example](https://github.com/web-push-libs/webpush-java/wiki/Usage-Example)

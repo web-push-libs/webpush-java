@@ -23,8 +23,11 @@ dependencies {
     // For CLI
     compile group: 'com.beust', name: 'jcommander', version: '1.78'
 
-    // For making async HTTP requests
+    // For making HTTP requests
     compile group: 'org.apache.httpcomponents', name: 'httpasyncclient', version: '4.1.4'
+
+    // For making async HTTP requests
+    compile group: 'org.asynchttpclient', name: 'async-http-client', version: '2.10.4'
 
     // For cryptographic operations
     shadow group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.64'
@@ -59,8 +62,8 @@ wrapper {
 }
 
 compileJava {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 }
 
 compileTestJava {
