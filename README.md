@@ -10,7 +10,7 @@ A Web Push library for Java 8. Supports payloads and VAPID.
 For Gradle, add the following dependency to `build.gradle`:
 
 ```groovy
-compile group: 'nl.martijndwars', name: 'web-push', version: '5.1.1-SNAPSHOT'
+compile group: 'nl.martijndwars', name: 'web-push', version: '5.1.1'
 ```
 
 For Maven, add the following dependency to `pom.xml`:
@@ -19,7 +19,7 @@ For Maven, add the following dependency to `pom.xml`:
 <dependency>
     <groupId>nl.martijndwars</groupId>
     <artifactId>web-push</artifactId>
-    <version>${web-push.version}</version>
+    <version>5.1.1</version>
 </dependency>
 ```
 
