@@ -1,3 +1,8 @@
+# 5.1.1
+
+* Target Java 8 instead of Java 7.
+* Added an asynchronous version `PushAsyncService` of the `PushService` that performs non-blocking HTTP calls. Uses `async-http-client` under the hood.
+
 # 5.1.0
 
 * Improvement: Add support for [urgency](https://tools.ietf.org/html/rfc8030#section-5.3) & [topic](https://tools.ietf.org/html/rfc8030#section-5.4) (contributed by jamie@checkin.tech).
