@@ -54,7 +54,7 @@ dependencies {
     testCompile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.64'
 
     // For verifying Base64Encoder results in unit tests
-    testCompile group: 'com.google.guava', name: 'guava', version: '28.2-jre'
+    testCompile group: 'com.google.guava', name: 'guava', version: '30.1-jre'
 }
 
 wrapper {
