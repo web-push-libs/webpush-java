@@ -1,6 +1,5 @@
 package nl.martijndwars.webpush.selenium;
 
-import nl.martijndwars.webpush.Base64Encoder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DynamicTest;
@@ -8,6 +7,7 @@ import org.junit.jupiter.api.TestFactory;
 
 import java.io.IOException;
 import java.security.Security;
+import java.util.Base64;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
@@ -58,8 +58,8 @@ public class SeleniumTests {
      * @return
      */
     protected Stream<Configuration> getConfigurations() {
-        String PUBLIC_KEY_NO_PADDING = Base64Encoder.encodeWithoutPadding(
-                Base64Encoder.decode(PUBLIC_KEY)
+        String PUBLIC_KEY_NO_PADDING = Base64.getUrlEncoder().withoutPadding().encodeToString(
+                Base64.getUrlDecoder().decode(PUBLIC_KEY)
         );
 
         return Stream.of(

@@ -19,6 +19,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -164,8 +165,8 @@ public abstract class AbstractPushService<T extends AbstractPushService<T>> {
                 headers.put("Content-Encoding", "aes128gcm");
             } else if (encoding == Encoding.AESGCM) {
                 headers.put("Content-Encoding", "aesgcm");
-                headers.put("Encryption", "salt=" + Base64Encoder.encodeUrlWithoutPadding(salt));
-                headers.put("Crypto-Key", "dh=" + Base64Encoder.encodeUrl(dh));
+                headers.put("Encryption", "salt=" + Base64.getUrlEncoder().withoutPadding().encodeToString(salt));
+                headers.put("Crypto-Key", "dh=" + Base64.getUrlEncoder().encodeToString(dh));
             }
 
             body = encrypted.getCiphertext();
@@ -201,15 +202,15 @@ public abstract class AbstractPushService<T extends AbstractPushService<T>> {
             byte[] pk = Utils.encode((ECPublicKey) getPublicKey());
 
             if (encoding == Encoding.AES128GCM) {
-                headers.put("Authorization", "vapid t=" + jws.getCompactSerialization() + ", k=" + Base64Encoder.encodeUrlWithoutPadding(pk));
+                headers.put("Authorization", "vapid t=" + jws.getCompactSerialization() + ", k=" + Base64.getUrlEncoder().withoutPadding().encodeToString(pk));
             } else if (encoding == Encoding.AESGCM) {
                 headers.put("Authorization", "WebPush " + jws.getCompactSerialization());
             }
 
             if (headers.containsKey("Crypto-Key")) {
-                headers.put("Crypto-Key", headers.get("Crypto-Key") + ";p256ecdsa=" + Base64Encoder.encodeUrlWithoutPadding(pk));
+                headers.put("Crypto-Key", headers.get("Crypto-Key") + ";p256ecdsa=" + Base64.getUrlEncoder().encodeToString(pk));
             } else {
-                headers.put("Crypto-Key", "p256ecdsa=" + Base64Encoder.encodeUrl(pk));
+                headers.put("Crypto-Key", "p256ecdsa=" + Base64.getUrlEncoder().encodeToString(pk));
             }
         } else if (notification.isFcm() && getGcmApiKey() != null) {
             headers.put("Authorization", "key=" + getGcmApiKey());

@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.security.*;
+import java.util.Base64;
 import java.util.HashMap;
 
-import static nl.martijndwars.webpush.Base64Encoder.decode;
 import static nl.martijndwars.webpush.Encoding.AES128GCM;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
@@ -17,6 +17,10 @@ class HttpEceTest {
     @BeforeAll
     public static void addSecurityProvider() {
         Security.addProvider(new BouncyCastleProvider());
+    }
+
+    private byte[] decode(String s) {
+        return Base64.getUrlDecoder().decode(s);
     }
 
     @Test
