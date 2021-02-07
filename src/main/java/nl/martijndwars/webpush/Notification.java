@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -71,7 +72,7 @@ public class Notification {
     }
 
     public Notification(String endpoint, String userPublicKey, String userAuth, byte[] payload, int ttl)  throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
-        this(endpoint, Utils.loadPublicKey(userPublicKey), Base64Encoder.decode(userAuth), payload, ttl);
+        this(endpoint, Utils.loadPublicKey(userPublicKey), Base64.getUrlDecoder().decode(userAuth), payload, ttl);
     }
 
     public Notification(String endpoint, PublicKey userPublicKey, byte[] userAuth, byte[] payload) {
@@ -79,15 +80,15 @@ public class Notification {
     }
 
     public Notification(String endpoint, String userPublicKey, String userAuth, byte[] payload) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
-        this(endpoint, Utils.loadPublicKey(userPublicKey), Base64Encoder.decode(userAuth), payload);
+        this(endpoint, Utils.loadPublicKey(userPublicKey), Base64.getUrlDecoder().decode(userAuth), payload);
     }
 
     public Notification(String endpoint, String userPublicKey, String userAuth, String payload) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
-        this(endpoint, Utils.loadPublicKey(userPublicKey), Base64Encoder.decode(userAuth), payload.getBytes(UTF_8));
+        this(endpoint, Utils.loadPublicKey(userPublicKey), Base64.getUrlDecoder().decode(userAuth), payload.getBytes(UTF_8));
     }
 
 	public Notification(String endpoint, String userPublicKey, String userAuth, String payload, Urgency urgency) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
-		this(endpoint, Utils.loadPublicKey(userPublicKey), Base64Encoder.decode(userAuth), payload.getBytes(UTF_8));
+		this(endpoint, Utils.loadPublicKey(userPublicKey), Base64.getUrlDecoder().decode(userAuth), payload.getBytes(UTF_8));
 		this.urgency = urgency;
 	}
 
@@ -200,7 +201,7 @@ public class Notification {
         }
 
         public NotificationBuilder userAuth(String userAuth) {
-            this.userAuth = Base64Encoder.decode(userAuth);
+            this.userAuth = Base64.getUrlDecoder().decode(userAuth);
             return this;
         }
 

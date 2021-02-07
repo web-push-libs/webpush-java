@@ -12,6 +12,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.security.*;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -437,7 +438,7 @@ public class HttpEce {
      */
     private static byte[] log(String info, byte[] array) {
         if ("1".equals(System.getenv("ECE_KEYLOG"))) {
-            System.out.println(info + " [" + array.length + "]: " + Base64Encoder.encodeUrlWithoutPadding(array));
+            System.out.println(info + " [" + array.length + "]: " + Base64.getUrlEncoder().withoutPadding().encodeToString(array));
         }
 
         return array;

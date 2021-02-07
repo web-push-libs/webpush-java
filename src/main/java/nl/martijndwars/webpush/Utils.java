@@ -15,6 +15,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 
 import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
 
@@ -45,7 +46,7 @@ public class Utils {
      * @param encodedPublicKey
      */
     public static PublicKey loadPublicKey(String encodedPublicKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] decodedPublicKey = Base64Encoder.decode(encodedPublicKey);
+        byte[] decodedPublicKey = Base64.getUrlDecoder().decode(encodedPublicKey);
         return loadPublicKey(decodedPublicKey);
     }
 
@@ -74,7 +75,7 @@ public class Utils {
      * @throws InvalidKeySpecException
      */
     public static PrivateKey loadPrivateKey(String encodedPrivateKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] decodedPrivateKey = Base64Encoder.decode(encodedPrivateKey);
+        byte[] decodedPrivateKey = Base64.getUrlDecoder().decode(encodedPrivateKey);
         return loadPrivateKey(decodedPrivateKey);
     }
 
