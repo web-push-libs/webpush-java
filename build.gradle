@@ -84,6 +84,8 @@ test {
         showStandardStreams true
         exceptionFormat 'full'
     }
+
+    exclude '**/SeleniumTests.class'
 }
 
 task javadocJar(type: Jar) {
