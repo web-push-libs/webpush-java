@@ -207,11 +207,16 @@ public abstract class AbstractPushService<T extends AbstractPushService<T>> {
                 headers.put("Authorization", "WebPush " + jws.getCompactSerialization());
             }
 
+			//--- Remove padding as spec
+			//--- https://datatracker.ietf.org/doc/html/draft-ietf-webpush-vapid-01#section-4
+			String b64 = Base64.getUrlEncoder().encodeToString(pk);
+			if (b64.endsWith("=")) b64 = b64.substring(0, b64.length()-1);
             if (headers.containsKey("Crypto-Key")) {
-                headers.put("Crypto-Key", headers.get("Crypto-Key") + ";p256ecdsa=" + Base64.getUrlEncoder().encodeToString(pk));
+                headers.put("Crypto-Key", headers.get("Crypto-Key") + ";p256ecdsa=" + b64);
             } else {
-                headers.put("Crypto-Key", "p256ecdsa=" + Base64.getUrlEncoder().encodeToString(pk));
+                headers.put("Crypto-Key", "p256ecdsa=" + b64);
             }
+			
         } else if (notification.isFcm() && getGcmApiKey() != null) {
             headers.put("Authorization", "key=" + getGcmApiKey());
         }
