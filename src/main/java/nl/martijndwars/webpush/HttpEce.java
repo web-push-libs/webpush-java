@@ -20,6 +20,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.crypto.Cipher.DECRYPT_MODE;
 import static javax.crypto.Cipher.ENCRYPT_MODE;
 import static nl.martijndwars.webpush.Utils.*;
+import static org.bouncycastle.jce.provider.BouncyCastleProvider.PROVIDER_NAME;
 
 /**
  * An implementation of Encrypted Content-Encoding for HTTP.
@@ -335,7 +336,7 @@ public class HttpEce {
         log("sender pubkey", encode(senderPubKey));
         log("receiver pubkey", encode(receiverPubKey));
 
-        KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH");
+        KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", PROVIDER_NAME);
         keyAgreement.init(getPrivateKey(keyId));
         keyAgreement.doPhase(remotePubKey, true);
         byte[] secret = keyAgreement.generateSecret();
@@ -357,7 +358,7 @@ public class HttpEce {
     private  byte[][] extractDH(String keyid, ECPublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException {
         ECPublicKey senderPubKey = getPublicKey(keyid);
 
-        KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH");
+        KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", PROVIDER_NAME);
         keyAgreement.init(getPrivateKey(keyid));
         keyAgreement.doPhase(publicKey, true);
 
