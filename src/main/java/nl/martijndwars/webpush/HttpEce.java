@@ -362,7 +362,7 @@ public class HttpEce {
         keyAgreement.doPhase(publicKey, true);
 
         byte[] secret = keyAgreement.generateSecret();
-        byte[] context = concat(labels.get(keyid).getBytes(UTF_8), new byte[1], lengthPrefix(publicKey), lengthPrefix(senderPubKey));
+        byte[] context = concat(labels.get(keyid).getBytes(UTF_8), new byte[1], lengthPrefix(senderPubKey), lengthPrefix(publicKey));
 
         return new byte[][]{
                 secret,
