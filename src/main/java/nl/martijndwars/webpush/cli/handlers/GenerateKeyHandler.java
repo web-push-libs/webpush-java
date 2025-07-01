@@ -42,10 +42,10 @@ public class GenerateKeyHandler implements HandlerInterface {
         }
 
         System.out.println("PublicKey:");
-        System.out.println(Base64.getUrlEncoder().encodeToString(encodedPublicKey));
+        System.out.println(Base64.getUrlEncoder().withoutPadding().encodeToString(encodedPublicKey));
 
         System.out.println("PrivateKey:");
-        System.out.println(Base64.getUrlEncoder().encodeToString(encodedPrivateKey));
+        System.out.println(Base64.getUrlEncoder().withoutPadding().encodeToString(encodedPrivateKey));
     }
 
     /**
