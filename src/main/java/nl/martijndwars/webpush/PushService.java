@@ -65,7 +65,7 @@ public class PushService extends AbstractPushService<PushService> {
     }
 
     public HttpResponse send(Notification notification) throws GeneralSecurityException, IOException, JoseException, ExecutionException, InterruptedException {
-        return send(notification, Encoding.AESGCM);
+        return send(notification, Encoding.AES128GCM);
     }
 
     /**
