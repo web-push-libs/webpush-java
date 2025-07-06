@@ -25,7 +25,7 @@ class HttpEceTest {
 
     @Test
     public void testZeroSaltAndKey() throws GeneralSecurityException {
-        HttpEce httpEce = new HttpEce();
+        HttpEce httpEce = HttpEce.createWithDefaultCipher();
         String plaintext = "Hello";
         byte[] salt = new byte[16];
         byte[] key = new byte[16];
@@ -45,7 +45,7 @@ class HttpEceTest {
      */
     @Test
     public void testSampleEncryption() throws GeneralSecurityException {
-        HttpEce httpEce = new HttpEce();
+        HttpEce httpEce = HttpEce.createWithThreadLocalCipher();
 
         byte[] plaintext = "I am the walrus".getBytes();
         byte[] salt = decode("I1BsxtFttlv3u_Oo94xnmw");
