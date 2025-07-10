@@ -354,15 +354,15 @@ public class HttpEce {
      * @param publicKey
      * @return
      */
-    private  byte[][] extractDH(String keyid, ECPublicKey publicKey) throws NoSuchAlgorithmException, InvalidKeyException {
-        ECPublicKey senderPubKey = getPublicKey(keyid);
+    private  byte[][] extractDH(String keyid, ECPublicKey senderPubKey) throws NoSuchAlgorithmException, InvalidKeyException {
+        ECPublicKey receiverPubKey = getPublicKey(keyid);
 
         KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH");
         keyAgreement.init(getPrivateKey(keyid));
-        keyAgreement.doPhase(publicKey, true);
+        keyAgreement.doPhase(senderPubKey, true);
 
         byte[] secret = keyAgreement.generateSecret();
-        byte[] context = concat(labels.get(keyid).getBytes(UTF_8), new byte[1], lengthPrefix(publicKey), lengthPrefix(senderPubKey));
+        byte[] context = concat(labels.get(keyid).getBytes(UTF_8), new byte[1], lengthPrefix(receiverPubKey), lengthPrefix(senderPubKey));
 
         return new byte[][]{
                 secret,
