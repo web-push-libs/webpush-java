@@ -1,57 +1,33 @@
 package nl.martijndwars.webpush.selenium;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-/**
- * Java wrapper for interacting with the Web Push Testing Service.
- */
 public class TestingService {
-    private String baseUrl;
+
+    private final String baseUrl;
+    private final HttpClient client;
 
     public TestingService(String baseUrl) {
-        this.baseUrl = baseUrl;
+        this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+        this.client = HttpClient.newHttpClient();
     }
 
-    /**
-     * Start a new test suite.
-     *
-     * @return
-     */
-    public int startTestSuite() throws IOException {
-        String startTestSuite = request(baseUrl + "start-test-suite/");
-
-        JsonElement root = JsonParser.parseString(startTestSuite);
-
-        return root
-                .getAsJsonObject()
-                .get("data")
-                .getAsJsonObject()
-                .get("testSuiteId")
-                .getAsInt();
+    public int startTestSuite() throws IOException, InterruptedException {
+        String response = request("start-test-suite/", null);
+        JsonObject data = getData(response);
+        return data.get("testSuiteId").getAsInt();
     }
 
-    /**
-     * Get a test ID and subscription for the given test case.
-     *
-     * @param testSuiteId
-     * @param configuration
-     * @return
-     * @throws IOException
-     */
-    public JsonObject getSubscription(int testSuiteId, Configuration configuration) throws IOException {
+    public JsonObject getSubscription(int testSuiteId, Configuration configuration) throws IOException, InterruptedException {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("testSuiteId", testSuiteId);
         jsonObject.addProperty("browserName", configuration.browser);
@@ -60,101 +36,53 @@ public class TestingService {
         if (configuration.gcmSenderId != null) {
             jsonObject.addProperty("gcmSenderId", configuration.gcmSenderId);
         }
-
         if (configuration.publicKey != null) {
             jsonObject.addProperty("vapidPublicKey", configuration.publicKey);
         }
 
-        HttpEntity entity = new StringEntity(jsonObject.toString(), ContentType.APPLICATION_JSON);
-
-        String getSubscription = request(baseUrl + "get-subscription/", entity);
-
-        return getData(getSubscription);
+        String response = request("get-subscription/", jsonObject.toString());
+        return getData(response);
     }
 
-    /**
-     * Get the notification status for the given test case.
-     *
-     * @param testSuiteId
-     * @param testId
-     * @return
-     * @throws IOException
-     */
-    public JsonArray getNotificationStatus(int testSuiteId, int testId) throws IOException {
+    public JsonArray getNotificationStatus(int testSuiteId, int testId) throws IOException, InterruptedException {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("testSuiteId", testSuiteId);
         jsonObject.addProperty("testId", testId);
 
-        HttpEntity entity = new StringEntity(jsonObject.toString(), ContentType.APPLICATION_JSON);
-
-        String notificationStatus = request(baseUrl + "get-notification-status/", entity);
-
-        return getData(notificationStatus).get("messages").getAsJsonArray();
+        String response = request("get-notification-status/", jsonObject.toString());
+        return getData(response).get("messages").getAsJsonArray();
     }
 
-    /**
-     * End the given test suite.
-     *
-     * @return
-     */
-    public boolean endTestSuite(int testSuiteId) throws IOException {
+    public void endTestSuite(int testSuiteId) throws IOException, InterruptedException {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("testSuiteId", testSuiteId);
 
-        HttpEntity entity = new StringEntity(jsonObject.toString(), ContentType.APPLICATION_JSON);
-
-        String endTestSuite = request(baseUrl + "end-test-suite/", entity);
-
-        return getData(endTestSuite).get("success").getAsBoolean();
+        String response = request("end-test-suite/", jsonObject.toString());
+        getData(response).get("success").getAsBoolean();
     }
 
-    /**
-     * Perform HTTP request and return response.
-     *
-     * @param uri
-     * @return
-     */
-    protected String request(String uri) throws IOException {
-        return request(uri, null);
+    private String request(String endpoint, String jsonBody) throws IOException, InterruptedException {
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + endpoint))
+                .header("Content-Type", "application/json");
+
+        if (jsonBody != null) {
+            builder.POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8));
+        } else {
+            builder.GET();
+        }
+
+        HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new IOException("HTTP " + response.statusCode() + " error for " + endpoint + ": " + response.body());
+        }
+
+        return response.body();
     }
 
-    /**
-     * Perform HTTP request and return response.
-     *
-     * @param uri
-     * @return
-     */
-    protected String request(String uri, HttpEntity entity) throws IOException {
-        return Request.Post(uri).body(entity).execute().handleResponse(httpResponse -> {
-            String json = EntityUtils.toString(httpResponse.getEntity());
-
-            if (httpResponse.getStatusLine().getStatusCode() != 200) {
-                JsonElement root = JsonParser.parseString(json);
-                JsonObject error = root.getAsJsonObject().get("error").getAsJsonObject();
-
-                String errorId = error.get("id").getAsString();
-                String errorMessage = error.get("message").getAsString();
-
-                String body = IOUtils.toString(entity.getContent(), UTF_8);
-
-                throw new IllegalStateException("Error while requesting " + uri + " with body " + body + " (" + errorId + ": " + errorMessage);
-            }
-
-            return json;
-        });
-    }
-
-    /**
-     * Get the a JSON object of the data in the JSON response.
-     *
-     * @param response
-     */
-    protected JsonObject getData(String response) {
-        JsonElement root = JsonParser.parseString(response);
-
-        return root
-                .getAsJsonObject()
-                .get("data")
-                .getAsJsonObject();
+    private JsonObject getData(String response) {
+        JsonObject root = JsonParser.parseString(response).getAsJsonObject();
+        return root.getAsJsonObject("data");
     }
 }

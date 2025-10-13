@@ -7,7 +7,7 @@ import com.google.gson.JsonPrimitive;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;
-import org.apache.http.HttpResponse;
+import java.net.http.HttpResponse;
 import org.junit.jupiter.api.function.Executable;
 
 import java.security.GeneralSecurityException;
@@ -20,9 +20,9 @@ public class BrowserTest implements Executable {
     public static final String PRIVATE_KEY = "AM0aAyoIryzARADnIsSCwg1p1aWFAL3Idc8dNXpf74MH";
     public static final String VAPID_SUBJECT = "http://localhost:8090";
 
-    private TestingService testingService;
-    private Configuration configuration;
-    private int testSuiteId;
+    private final TestingService testingService;
+    private final Configuration configuration;
+    private final int testSuiteId;
 
     public BrowserTest(TestingService testingService, Configuration configuration, int testSuiteId) {
         this.configuration = configuration;
@@ -33,7 +33,6 @@ public class BrowserTest implements Executable {
     /**
      * Execute the test for the given browser configuration.
      *
-     * @throws Throwable
      */
     @Override
     public void execute() throws Throwable {
@@ -48,8 +47,8 @@ public class BrowserTest implements Executable {
         String message = "Hëllö, world!";
         Notification notification = new Notification(subscription, message);
 
-        HttpResponse response = pushService.send(notification);
-        assertEquals(201, response.getStatusLine().getStatusCode());
+        HttpResponse<byte[]> response = pushService.send(notification);
+        assertEquals(201, response.statusCode());
 
         JsonArray messages = testingService.getNotificationStatus(testSuiteId, testId);
         assertEquals(1, messages.size());
@@ -57,20 +56,13 @@ public class BrowserTest implements Executable {
     }
 
     protected PushService getPushService() throws GeneralSecurityException {
-        PushService pushService;
-
-        if (!configuration.isVapid()) {
-            pushService = new PushService(GCM_API_KEY);
-        } else {
-            pushService = new PushService(PUBLIC_KEY, PRIVATE_KEY, VAPID_SUBJECT);
-        }
-        return pushService;
+        return new PushService(PUBLIC_KEY, PRIVATE_KEY, VAPID_SUBJECT);
     }
+
 
     /**
      * The name used by JUnit to display the test.
      *
-     * @return
      */
     public String getDisplayName() {
         return "Browser " + configuration.browser + ", version " + configuration.version + ", vapid " + configuration.isVapid();

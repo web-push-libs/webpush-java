@@ -1,14 +1,6 @@
 package nl.martijndwars.webpush;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.impl.nio.client.HttpAsyncClients;
-import org.apache.http.message.BasicHeader;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.interfaces.ECPublicKey;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
@@ -16,105 +8,97 @@ import org.jose4j.lang.JoseException;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
+import java.util.Base64;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
-public class PushService extends AbstractPushService<PushService> {
+public class PushService {
 
-    public PushService() {
-    }
+    private final HttpClient client;
+    private final KeyPair vapidKeyPair;
+    private final String publicKeyBase64;
+    private final String subject;
 
-    public PushService(String gcmApiKey) {
-        super(gcmApiKey);
-    }
-
-    public PushService(KeyPair keyPair) {
-        super(keyPair);
-    }
-
-    public PushService(KeyPair keyPair, String subject) {
-        super(keyPair, subject);
-    }
-
-    public PushService(String publicKey, String privateKey) throws GeneralSecurityException {
-        super(publicKey, privateKey);
-    }
-
-    public PushService(String publicKey, String privateKey, String subject) throws GeneralSecurityException {
-        super(publicKey, privateKey, subject);
-    }
-
-    /**
-     * Send a notification and wait for the response.
-     *
-     * @param notification
-     * @param encoding
-     * @return
-     * @throws GeneralSecurityException
-     * @throws IOException
-     * @throws JoseException
-     * @throws ExecutionException
-     * @throws InterruptedException
-     */
-    public HttpResponse send(Notification notification, Encoding encoding) throws GeneralSecurityException, IOException, JoseException, ExecutionException, InterruptedException {
-        return sendAsync(notification, encoding).get();
-    }
-
-    public HttpResponse send(Notification notification) throws GeneralSecurityException, IOException, JoseException, ExecutionException, InterruptedException {
-        return send(notification, Encoding.AES128GCM);
-    }
-
-    /**
-     * Send a notification, but don't wait for the response.
-     *
-     * @param notification
-     * @param encoding
-     * @return
-     * @throws GeneralSecurityException
-     * @throws IOException
-     * @throws JoseException
-     *
-     * @deprecated Use {@link PushAsyncService#send(Notification, Encoding)} instead.
-     */
-    @Deprecated
-    public Future<HttpResponse> sendAsync(Notification notification, Encoding encoding) throws GeneralSecurityException, IOException, JoseException {
-        HttpPost httpPost = preparePost(notification, encoding);
-
-        final CloseableHttpAsyncClient closeableHttpAsyncClient = HttpAsyncClients.createSystem();
-        closeableHttpAsyncClient.start();
-
-        return closeableHttpAsyncClient.execute(httpPost, new ClosableCallback(closeableHttpAsyncClient));
-    }
-
-    /**
-     * @deprecated Use {@link PushAsyncService#send(Notification)} instead.
-     */
-    @Deprecated
-    public Future<HttpResponse> sendAsync(Notification notification) throws GeneralSecurityException, IOException, JoseException {
-        return sendAsync(notification, Encoding.AES128GCM);
-    }
-
-    /**
-     * Prepare a HttpPost for Apache async http client
-     *
-     * @param notification
-     * @param encoding
-     * @return
-     * @throws GeneralSecurityException
-     * @throws IOException
-     * @throws JoseException
-     */
-    public HttpPost preparePost(Notification notification, Encoding encoding) throws GeneralSecurityException, IOException, JoseException {
-        HttpRequest request = prepareRequest(notification, encoding);
-        HttpPost httpPost = new HttpPost(request.getUrl());
-        request.getHeaders().forEach(httpPost::addHeader);
-        if (request.getBody() != null) {
-            httpPost.setEntity(new ByteArrayEntity(request.getBody()));
+    static {
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
         }
-        return httpPost;
+    }
+
+    public PushService(String publicKeyBase64, String privateKeyBase64, String subject) throws GeneralSecurityException {
+        this.client = HttpClient.newHttpClient();
+        this.subject = subject;
+        this.publicKeyBase64 = publicKeyBase64;
+
+        KeyFactory kf = KeyFactory.getInstance("EC", BouncyCastleProvider.PROVIDER_NAME);
+        byte[] pubBytes = Base64.getUrlDecoder().decode(publicKeyBase64);
+        byte[] privBytes = Base64.getUrlDecoder().decode(privateKeyBase64);
+
+        PublicKey pubKey = kf.generatePublic(new java.security.spec.X509EncodedKeySpec(pubBytes));
+        PrivateKey privKey = kf.generatePrivate(new java.security.spec.PKCS8EncodedKeySpec(privBytes));
+        this.vapidKeyPair = new KeyPair(pubKey, privKey);
+    }
+
+    /**
+     * Enviar notificación de forma síncrona
+     */
+    public HttpResponse<byte[]> send(Notification notification) throws IOException, InterruptedException, JoseException, GeneralSecurityException {
+        HttpRequest request = prepareRequest(notification);
+        return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+    }
+
+    /**
+     * Enviar notificación de forma asincrónica
+     */
+    public CompletableFuture<HttpResponse<byte[]>> sendAsync(Notification notification) throws JoseException, GeneralSecurityException {
+        HttpRequest request = prepareRequest(notification);
+        return client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
+    }
+
+    /**
+     * Preparar HttpRequest incluyendo headers de la suscripción y JWT VAPID
+     */
+    private HttpRequest prepareRequest(Notification notification) throws JoseException, GeneralSecurityException {
+        String endpoint = notification.getEndpoint(); // si tu fork lo tiene
+        byte[] payload = notification.getPayload();
+
+        String jwt = createVapidJWT(URI.create(endpoint));
+
+        return HttpRequest.newBuilder()
+                .uri(URI.create(endpoint))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(payload))
+                .header("TTL", "60")
+                .header("Authorization", "vapid t=" + jwt + ", k=" + publicKeyBase64)
+                .build();
+    }
+
+    /**
+     * Crear JWT VAPID firmado con la clave privada usando BouncyCastle
+     */
+    private String createVapidJWT(URI endpoint) throws JoseException {
+        JwtClaims claims = new JwtClaims();
+        claims.setAudience(endpoint.getScheme() + "://" + endpoint.getHost());
+        claims.setExpirationTimeMinutesInTheFuture(12 * 60); // 12h
+        claims.setSubject(subject);
+
+        JsonWebSignature jws = new JsonWebSignature();
+        jws.setPayload(claims.toJson());
+        jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256);
+        jws.setKey(vapidKeyPair.getPrivate());
+        jws.setHeader("typ", "JWT");
+
+        return jws.getCompactSerialization();
+    }
+
+    public KeyPair getVapidKeyPair() {
+        return vapidKeyPair;
+    }
+
+    public String getPublicKeyBase64() {
+        return publicKeyBase64;
     }
 }

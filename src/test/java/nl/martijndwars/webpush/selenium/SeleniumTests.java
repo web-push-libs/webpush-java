@@ -32,7 +32,7 @@ public class SeleniumTests {
      * @throws IOException
      */
     @AfterAll
-    public static void tearDown() throws IOException {
+    public static void tearDown() throws IOException, InterruptedException {
         testingService.endTestSuite(testSuiteId);
     }
 
@@ -42,7 +42,7 @@ public class SeleniumTests {
      * @return
      */
     @TestFactory
-    public Stream<DynamicTest> dynamicTests() throws IOException {
+    public Stream<DynamicTest> dynamicTests() throws IOException, InterruptedException {
         testSuiteId = testingService.startTestSuite();
 
         return getConfigurations().map(configuration -> {
