@@ -87,10 +87,10 @@ public class Notification {
         this(endpoint, Utils.loadPublicKey(userPublicKey), Base64.getUrlDecoder().decode(userAuth), payload.getBytes(UTF_8));
     }
 
-	public Notification(String endpoint, String userPublicKey, String userAuth, String payload, Urgency urgency) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
-		this(endpoint, Utils.loadPublicKey(userPublicKey), Base64.getUrlDecoder().decode(userAuth), payload.getBytes(UTF_8));
-		this.urgency = urgency;
-	}
+    public Notification(String endpoint, String userPublicKey, String userAuth, String payload, Urgency urgency) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        this(endpoint, Utils.loadPublicKey(userPublicKey), Base64.getUrlDecoder().decode(userAuth), payload.getBytes(UTF_8));
+        this.urgency = urgency;
+    }
 
     public Notification(Subscription subscription, String payload) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
         this(subscription.endpoint, subscription.keys.p256dh, subscription.keys.auth, payload);
@@ -156,8 +156,10 @@ public class Notification {
 
     public String getOrigin() throws MalformedURLException {
         URL url = new URL(getEndpoint());
+        int port = url.getPort();
+        boolean includePort = port != -1 && port != url.getDefaultPort();
 
-        return url.getProtocol() + "://" + url.getHost();
+        return url.getProtocol() + "://" + url.getHost() + (includePort ? ":" + port : "");
     }
 
     public static NotificationBuilder builder() {

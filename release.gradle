@@ -27,16 +27,17 @@ publishing {
                     }
                 }
             }
-
         }
     }
+}
+
+nexusPublishing {
     repositories {
-        maven {
-            credentials {
-                username ossrhUsername
-                password ossrhPassword
-            }
-            url getRepositoryUrl()
+        sonatype {
+            nexusUrl.set(uri('https://ossrh-staging-api.central.sonatype.com/service/local/'))
+            snapshotRepositoryUrl.set(uri('https://central.sonatype.com/repository/maven-snapshots/'))
+            username = project.findProperty('sonatypeUsername') ?: project.findProperty('ossrhUsername')
+            password = project.findProperty('sonatypePassword') ?: project.findProperty('ossrhPassword')
         }
     }
 }
@@ -45,10 +46,40 @@ signing {
     sign publishing.publications.mavenJava
 }
 
-def getRepositoryUrl() {
-    if (version.endsWith('SNAPSHOT')) {
-        return 'https://oss.sonatype.org/content/repositories/snapshots/'
-    } else {
-        return 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+tasks.register('verifyPublicationPom') {
+    dependsOn 'generatePomFileForMavenJavaPublication'
+
+    doLast {
+        def pomFile = file("$buildDir/publications/mavenJava/pom-default.xml")
+        def pom = new XmlSlurper().parse(pomFile)
+        def scopes = [:]
+
+        pom.dependencies.dependency.each { dependency ->
+            scopes["${dependency.groupId.text()}:${dependency.artifactId.text()}"] = dependency.scope.text()
+        }
+
+        [
+                'com.beust:jcommander',
+                'org.apache.httpcomponents:httpasyncclient',
+                'org.asynchttpclient:async-http-client',
+                'org.bitbucket.b_c:jose4j'
+        ].each { dependency ->
+            if (scopes[dependency] != 'compile') {
+                throw new GradleException("Expected ${dependency} to be published with compile scope, got '${scopes[dependency]}'")
+            }
+        }
     }
+}
+
+// Keep the historical release commands stable while using the current Sonatype plugin internally.
+gradle.projectsEvaluated {
+    tasks.named('publish') {
+        dependsOn 'publishToSonatype'
+    }
+}
+
+tasks.register('closeAndReleaseRepository') {
+    group = 'publishing'
+    description = 'Closes and releases the current Sonatype staging repository.'
+    dependsOn 'findSonatypeStagingRepository', 'closeAndReleaseSonatypeStagingRepository'
 }

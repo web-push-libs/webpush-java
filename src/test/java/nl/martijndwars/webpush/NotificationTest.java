@@ -40,4 +40,22 @@ class NotificationTest {
                 .build();
         assertEquals(28 * oneDayDurationInSeconds, notification.getTTL());
     }
+
+    @Test
+    public void testOriginOmitsDefaultPort() throws Exception {
+        Notification notification = Notification.builder()
+                .endpoint("https://push.example.test:443/send/123")
+                .build();
+
+        assertEquals("https://push.example.test", notification.getOrigin());
+    }
+
+    @Test
+    public void testOriginIncludesNonDefaultPort() throws Exception {
+        Notification notification = Notification.builder()
+                .endpoint("https://push.example.test:8443/send/123")
+                .build();
+
+        assertEquals("https://push.example.test:8443", notification.getOrigin());
+    }
 }
